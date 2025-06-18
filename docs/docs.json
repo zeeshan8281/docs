@@ -2012,6 +2012,10 @@
     {
       "source": "/wallet-app/mini-apps",
       "destination": "/wallet-app/introduction/mini-apps"
+    },
+    {
+      "source": "/wallet-app/chat-agents",
+      "destination": "/wallet-app/guides/chat-agents"
     }
   ],
   "integrations": {
