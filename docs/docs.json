@@ -639,7 +639,8 @@
           {
             "group": "Guides",
             "pages": [
-              "wallet-app/guides/thinking-social"
+              "wallet-app/guides/thinking-social",
+              "wallet-app/guides/chat-agents"
             ]
           }
         ]
