@@ -1,0 +1,44 @@
+---
+title: 'Search and Discovery'
+description: 'Learn how to make sure your Mini App shows up in search for Base App'
+---
+
+The Base App provides multiple surface areas where Mini Apps can be discovered and accessed. Understanding these surfaces and how to optimize for them is crucial for maximizing your Mini App's reach and engagement.
+
+## How Base App Uses Your Manifest Data
+
+Base App reads your farcaster.json manifest to populate different UI elements across all discovery surfaces:
+App Grid Display (Your Apps & Categories).
+
+<Frame>
+<img
+  alt="Manifest Embed Example"
+  src="/images/minikit/spec_image.jpeg"
+  height="364"
+/>
+</Frame>
+
+### App Grid Display (Your Apps & Categories)
+
+``json
+{
+  "frame": {
+    ....
+    "iconUrl": "1024x1024px PNG", // ① App Icon - displays in grid
+    "name": "Max 32 characters", // ② App Name - shows below icon
+    "subtitle": "Brief tagline" // ③ Tagline/Description - appears in detailed views
+  }
+}
+``
+### App Grid Display (Your Apps & Categories)
+
+``json
+{
+  "frame": {
+    ....
+    "iconUrl": "1024x1024px PNG", // ① App Icon - displays in grid
+    "name": "Max 32 characters", // ② App Name - shows below icon
+    "subtitle": "Brief tagline" // ③ Tagline/Description - appears in detailed views
+  }
+}
+``
