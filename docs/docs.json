@@ -398,8 +398,7 @@
             "group": "Design Guidelines",
             "pages": [
               "mini-apps/best-practices",
-              "mini-apps/ui-kit",
-              "mini-apps/inspirations"
+              "mini-apps/ui-kit"
             ]
           },        {
             "group": "Troubleshooting",
@@ -672,6 +671,19 @@
             }
           ]
         }
+      },
+      {
+        "tab": "Base App",
+        "groups": [
+          {
+            "group": "Introduction",
+            "pages": ["base-app/introduction/beta-faq"]
+          },
+          {
+            "group": "Agents",
+            "pages": ["base-app/agents/why-agents", "base-app/agents/getting-started", "base-app/agents/content-types","base-app/agents/transaction-trays","base-app/agents/best-practices", "base-app/agents/getting-featured"]
+          }
+        ]
       },
       {
         "tab": "Cookbook",
