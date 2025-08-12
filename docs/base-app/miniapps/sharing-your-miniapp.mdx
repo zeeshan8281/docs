@@ -13,12 +13,12 @@ description: "Turn every user action into organic growth with shareable, metadat
 
 Sharing is one of the fastest and most cost-effective ways to grow your Mini App user base.
 
-When a user shares your app into a feed (such as Base App or Farcaster), the platform generates a **rich embed** — a visual preview complete with your branding, imagery, and call-to-action button that appears directly in social feeds.
+When a user shares your app into a feed (such as Base App), the platform generates a **rich embed** — a visual preview complete with your branding, imagery, and call-to-action button that appears directly in social feeds.
 
 Every share:
 
 - **Increases reach** — friends and followers see your app instantly
-- **Drives engagement** — visually compelling embeds get more clicks than plain links  
+- **Drives engagement** — compelling embeds stop the scroll, and with one click, users launch straight into your Mini App.
 - **Improves ranking** — shared apps are more likely to appear in "Trending" and category leaderboards
 - **Creates viral loops** — great experiences encourage users to share with their networks
 
@@ -41,7 +41,7 @@ The metadata acts as instructions that tell the platform exactly how to display 
 
 <Steps>
 <Step title="User shares your link">
-  User clicks share or pastes your Mini App URL into a social feed (Base App, Farcaster).
+  User clicks share or pastes your Mini App URL into a social feed (Base App).
 </Step>
 
 <Step title="Platform fetches metadata">
@@ -49,7 +49,7 @@ The metadata acts as instructions that tell the platform exactly how to display 
 </Step>
 
 <Step title="Metadata becomes embed">
-  Platform transforms your metadata into a rich visual embed with image, title, description, and interactive button.
+  Platform transforms your metadata into a rich visual embed with image, title, description, and interactive button. Embeds can also be dynamic and personalized for each user — [learn more about dynamic embeds](#dynamic-embeds).
 </Step>
 
 <Step title="Embed appears in feed">
@@ -59,6 +59,7 @@ The metadata acts as instructions that tell the platform exactly how to display 
 
 ### Metadata Structure
 
+Base App generates the HTML metadata for your embed automatically from your farcaster.json file. These meta tags tell the platform exactly how to render your Mini App in a feed—complete with your image, title, and one-click launch button. For a full walkthrough of how embeds work in feeds, see [Sharing Your Mini App](/base-app/miniapps/sharing-your-miniapp).
 Your metadata consists of specific HTML meta tags that define each part of the embed:
 
 ```html
@@ -170,7 +171,7 @@ export default function ComposeCastButton() {
     });
   };
 
-// 
+
   const handleComposeWithEmbed = () => {
     composeCast({
       text: 'Check out this amazing Mini App!',
@@ -207,8 +208,8 @@ Users can also share directly from your app's detail view in the Base app throug
 
 ### Choosing Between Static and Dynamic Embeds
 
-<Tabs>
-<Tab title="Static Embeds">
+#### Static embeds
+
 <Frame caption="Static embed example - every user shares the same embed">
   <img src="/images/minikit/static_embed.jpeg" alt="Static OG embed" className="h-[220px] w-auto"/>
 </Frame>
@@ -226,12 +227,10 @@ A single, unchanging image and text for all shares of your Mini App.
 - No real-time data reflection
 
 **Best for:** Brand awareness campaigns, simple apps without user-specific content
-</Tab>
 
+#### Dynamic embeds
 
-<Tab title="Dynamic Embeds">
 <Frame caption="Dynamic embed example based user outcome">
-  
   <img src="/images/minikit/dynamic_embed.jpeg" alt="Dynamic OG embed" className="h-[220px] w-auto"/>
 </Frame>
 
@@ -256,10 +255,8 @@ Your backend fetches the latest stats and generates an OG image dynamically.
 **Best for:** Trading apps, social stats, live leaderboards, time-sensitive content
 
 <Warning>
-Real-time generation can be slower  ensure your endpoint responds within 3-5 seconds to avoid timeouts.
+Real-time generation can be slower — ensure your endpoint responds within 3–5 seconds to avoid timeouts.
 </Warning>
-</Tab>
-</Tabs>
 
 ### Dynamic Metadata Request Flow
 
