@@ -1,0 +1,47 @@
+---
+title: "Validation"
+description: "Run local and automated checks to meet the Quality Bar"
+---
+
+# Validation
+
+Use these tools to verify your MiniApp meets requirements.
+
+## CLI
+
+```bash
+mini-kit doctor         # schema, assets, categories, budgets
+mini-kit lint-copy      # banned terms and CTA rules
+mini-kit lighthouse     # mobile profile inside webview harness
+```
+
+## Manual checks
+
+- Test iOS and Android devices
+- Light and dark themes
+- 3G, Wi‑Fi, offline
+- Error states, retries, and guest mode flows
+
+## CI example (GitHub Actions)
+
+```yaml
+name: Validate MiniApp
+on: [push, pull_request]
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "18" }
+      - run: npm i -g @base/minikit-cli
+      - run: mini-kit doctor --strict
+      - run: mini-kit lint-copy
+```
+
+## Pass criteria
+
+- Quality Checklist: all items checked
+- Budgets: within limits (JS, images, TBT, CLS)
+- Copy: no banned terms; outcome‑oriented CTAs
+- Assets: dimensions and byte caps match spec

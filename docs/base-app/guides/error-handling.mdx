@@ -1,0 +1,62 @@
+---
+title: "Error Handling"
+description: "Standard error taxonomy, UX patterns, and telemetry for reliability"
+---
+
+# Error Handling
+
+Adopt a standard taxonomy and friendly UX to reduce confusion and improve recovery.
+
+## Taxonomy
+
+- `network_offline`
+- `auth_declined`
+- `rate_limited`
+- `contract_failure`
+- `validation`
+
+## UX patterns
+
+```tsx
+function FriendlyError({ title, message, primary, secondary }) {
+  return (
+    <div className="error">
+      <Icon name="warning" />
+      <h3>{title}</h3>
+      <p>{message}</p>
+      <PrimaryButton onClick={primary.onClick}>{primary.label}</PrimaryButton>
+      {secondary && (
+        <SecondaryButton onClick={secondary.onClick}>
+          {secondary.label}
+        </SecondaryButton>
+      )}
+    </div>
+  );
+}
+```
+
+Guidelines:
+
+- Plain English; explain what happened and the next step
+- Offer safe retry; only surface “Try again” after state change
+- Provide a non‑blocking path (e.g., Continue as guest)
+
+## Auth failure examples
+
+| Code                  | Title                    | Message                                          | Primary           |
+| --------------------- | ------------------------ | ------------------------------------------------ | ----------------- |
+| `USER_DECLINED`       | Authentication cancelled | You can still browse or try again later.         | Continue browsing |
+| `NETWORK_ERROR`       | Connection issue         | Check your internet connection and try again.    | Retry             |
+| `DOMAIN_NOT_VERIFIED` | App configuration error  | Contact the app developer to resolve this issue. | Go back           |
+
+## Telemetry
+
+Track `action`, `surface`, `latency_ms`, `error_code`. Target auth error rate < 1%.
+
+```js
+analytics.track("ERROR", {
+  code: "NETWORK_ERROR",
+  surface: "auth",
+  latency_ms: 1200,
+});
+```

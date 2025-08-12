@@ -1,0 +1,336 @@
+---
+title: "Design Principles"
+description: "Core design principles for Base MiniApps inspired by Apple Human Interface Guidelines"
+---
+
+# Design Principles for Base MiniApps
+
+These principles guide the creation of high-quality, user-friendly MiniApps that feel native within the Base App ecosystem. Inspired by Apple's Human Interface Guidelines, they're adapted for the unique constraints and opportunities of webview-based mini applications.
+
+## Core Principles
+
+### Clarity
+
+**Make purpose and functionality immediately clear through design and content.**
+
+<Tabs>
+  <Tab title="What This Means">
+    - **Immediate Value**: Users should understand your app's purpose within 5
+    seconds - **Visual Hierarchy**: Use size, color, and spacing to guide
+    attention - **Plain Language**: Avoid crypto jargon and technical terms in
+    primary UI - **Clear Actions**: Button text describes outcomes, not
+    mechanisms
+  </Tab>
+  <Tab title="Do">
+    - "Start Daily Quiz" (clear outcome) - Use consistent visual hierarchy -
+    Lead with user benefits - Simple, focused screens
+  </Tab>
+  <Tab title="Don't">
+    - "Connect Wallet" (technical mechanism) - Overwhelming first screens -
+    Unexplained crypto terminology - Ambiguous button labels
+  </Tab>
+</Tabs>
+
+**Example Copy Transformation:**
+
+```diff
+- "Connect your wallet to authenticate and view your NFT portfolio"
++ "View your collectibles and track their value"
+```
+
+### Deference
+
+**Respect the Base App environment and don't obstruct the native experience.**
+
+<Tabs>
+  <Tab title="What This Means">
+    - **Safe Areas**: Respect iOS/Android safe areas and Base App chrome -
+    **Native Feel**: Follow platform conventions for navigation and interaction
+    - **Seamless Integration**: Feel like part of Base App, not a separate
+    website - **Performance**: Load quickly without blocking the main app
+  </Tab>
+  <Tab title="Do">
+    - Use `env(safe-area-inset-*)` CSS - Follow Base App's visual language -
+    Optimize for mobile webview performance - Support both light and dark themes
+  </Tab>
+  <Tab title="Don't">
+    - Ignore safe areas (content hidden behind notch/home indicator) - Custom
+    scrolling that conflicts with native behavior - Heavy animations that impact
+    Base App performance - Fixed positioning that blocks Base App navigation
+  </Tab>
+</Tabs>
+
+**CSS Safe Area Implementation:**
+
+```css
+:root {
+  --inset-top: env(safe-area-inset-top);
+  --inset-bottom: env(safe-area-inset-bottom);
+  --inset-left: env(safe-area-inset-left);
+  --inset-right: env(safe-area-inset-right);
+}
+
+.app-container {
+  padding-top: var(--inset-top);
+  padding-bottom: var(--inset-bottom);
+  padding-left: var(--inset-left);
+  padding-right: var(--inset-right);
+}
+```
+
+### Depth
+
+**Use motion and layering thoughtfully to create intuitive user experiences.**
+
+<Tabs>
+  <Tab title="What This Means">
+    - **Purposeful Motion**: Animations should guide attention and provide
+    feedback - **Subtle Transitions**: Prefer slide-ins over full-screen
+    spinners - **Visual Feedback**: Confirm actions with appropriate
+    micro-interactions - **Accessibility**: Honor `prefers-reduced-motion` user
+    settings
+  </Tab>
+  <Tab title="Do">
+    - 200-300ms easing for transitions - Loading states with skeleton screens -
+    Subtle button press feedback - Contextual overlays for secondary actions
+  </Tab>
+  <Tab title="Don't">
+    - Heavy 3D effects or parallax scrolling - Animations longer than 500ms -
+    Motion without purpose - Ignoring accessibility preferences
+  </Tab>
+</Tabs>
+
+**Motion Implementation:**
+
+```css
+/* Respect user preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Standard transitions */
+.button {
+  transition: all 0.2s ease-out;
+}
+
+.slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+```
+
+## Design Tokens
+
+### Typography Scale
+
+Use Base App's typography tokens for consistency:
+
+```css
+:root {
+  /* Heading Sizes */
+  --text-xl: 1.25rem; /* 20px - Page titles */
+  --text-lg: 1.125rem; /* 18px - Section headers */
+  --text-base: 1rem; /* 16px - Body text */
+  --text-sm: 0.875rem; /* 14px - Captions */
+  --text-xs: 0.75rem; /* 12px - Labels */
+
+  /* Line Heights */
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.625;
+}
+```
+
+### Color System
+
+Support both light and dark themes:
+
+```css
+:root {
+  /* Light Theme */
+  --primary: #0052ff;
+  --primary-hover: #0040cc;
+  --background: #ffffff;
+  --surface: #f8f9fa;
+  --text-primary: #111111;
+  --text-secondary: #6b7280;
+  --border: #e5e7eb;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Dark Theme */
+    --primary: #4285ff;
+    --primary-hover: #5a95ff;
+    --background: #0b0b0c;
+    --surface: #1a1a1b;
+    --text-primary: #ffffff;
+    --text-secondary: #9ca3af;
+    --border: #374151;
+  }
+}
+```
+
+### Spacing Scale
+
+Consistent spacing using 4px base unit:
+
+```css
+:root {
+  --space-1: 0.25rem; /* 4px */
+  --space-2: 0.5rem; /* 8px */
+  --space-3: 0.75rem; /* 12px */
+  --space-4: 1rem; /* 16px */
+  --space-6: 1.5rem; /* 24px */
+  --space-8: 2rem; /* 32px */
+  --space-12: 3rem; /* 48px */
+  --space-16: 4rem; /* 64px */
+}
+```
+
+### Touch Targets
+
+Ensure accessibility with proper touch target sizes:
+
+```css
+/* Minimum touch target size */
+.interactive {
+  min-height: 44px;
+  min-width: 44px;
+
+  /* For smaller visual elements, add padding */
+  padding: var(--space-3);
+}
+
+/* Button sizing */
+.button-sm {
+  height: 36px;
+  padding: 0 var(--space-3);
+}
+.button-md {
+  height: 44px;
+  padding: 0 var(--space-4);
+}
+.button-lg {
+  height: 52px;
+  padding: 0 var(--space-6);
+}
+```
+
+## Layout Patterns
+
+### Grid System
+
+Use CSS Grid for responsive layouts:
+
+```css
+.grid {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-4);
+}
+
+/* Common layouts */
+.grid-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+.grid-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+/* Responsive grid */
+.grid-auto {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+```
+
+### Card Components
+
+Standard card styling:
+
+```css
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: var(--space-4);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.card-interactive {
+  transition: all 0.2s ease-out;
+  cursor: pointer;
+}
+
+.card-interactive:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
+}
+```
+
+## Common Mistakes to Avoid
+
+### ❌ Layout Issues
+
+- **Ignoring safe areas**: Content gets cut off by device notches or home indicators
+- **Fixed positioning**: Overlapping Base App navigation elements
+- **Inconsistent spacing**: Using arbitrary pixel values instead of design tokens
+
+### ❌ Typography Problems
+
+- **Poor contrast**: Text that's hard to read in light or dark mode
+- **Inconsistent sizing**: Not using the typography scale
+- **Too small text**: Body text smaller than 16px on mobile
+
+### ❌ Interaction Issues
+
+- **Tiny touch targets**: Interactive elements smaller than 44px
+- **Missing feedback**: No visual response to user actions
+- **Broken animations**: Not respecting `prefers-reduced-motion`
+
+### ❌ Copy and Content
+
+- **Crypto jargon**: Using "connect wallet" instead of "continue"
+- **Unclear value**: Not explaining what the app does upfront
+- **Technical language**: Using protocol terms in user-facing text
+
+## Design Review Checklist
+
+Before submitting your MiniApp:
+
+- [ ] **Typography**: Uses Base App typography tokens
+- [ ] **Colors**: Supports both light and dark themes
+- [ ] **Spacing**: Consistent spacing using design tokens
+- [ ] **Touch Targets**: All interactive elements ≥ 44px
+- [ ] **Safe Areas**: Properly implemented using CSS environment variables
+- [ ] **Motion**: Respects user motion preferences
+- [ ] **Copy**: Clear, jargon-free language focused on user benefits
+- [ ] **Visual Hierarchy**: Clear information hierarchy guides user attention
+
+## Resources
+
+- **[Figma UI Kit](/base-app/design/figma-ui-kit)**: Download the official Base MiniApp component library
+- **[UI Patterns](/base-app/design/ui-patterns)**: Copy-paste components and patterns
+- **[Accessibility Guide](/base-app/design/accessibility)**: Ensure your app works for everyone
+- **Quality Bar**: Review the [Quality Checklist](/base-app/quality/checklist) for complete requirements
+
+<Note>
+  These principles are enforced through the Quality Bar checklist. Apps that
+  don't follow these guidelines will not be eligible for featuring in Base App.
+</Note>

@@ -1,0 +1,572 @@
+---
+title: "Performance Budgets"
+description: "Performance requirements and optimization guidelines for Base MiniApps"
+---
+
+# Performance Budgets
+
+Fast loading and smooth interactions are critical for Base MiniApps. These performance budgets define the standards your app must meet for featuring eligibility and optimal user experience.
+
+<Warning>
+**Quality Bar Requirement**
+
+Meeting these performance budgets is mandatory for featuring. Apps that don't meet these standards will not pass the Quality Bar checklist.
+
+</Warning>
+
+## Core Performance Targets
+
+### Loading Performance
+
+| Metric                             | Target  | Measurement                          |
+| ---------------------------------- | ------- | ------------------------------------ |
+| **First Contentful Paint (FCP)**   | ≤ 1.2s  | Time to first visible content        |
+| **Largest Contentful Paint (LCP)** | ≤ 2.5s  | Time to main content loaded          |
+| **First Input Delay (FID)**        | ≤ 100ms | Responsiveness to user interaction   |
+| **Time to Interactive (TTI)**      | ≤ 1.5s  | App ready for meaningful interaction |
+
+### Runtime Performance
+
+| Metric                            | Target   | Measurement                     |
+| --------------------------------- | -------- | ------------------------------- |
+| **Cumulative Layout Shift (CLS)** | ≤ 0.1    | Visual stability score          |
+| **Total Blocking Time (TBT)**     | ≤ 200ms  | Main thread blocking time       |
+| **Frame Rate**                    | ≥ 60 FPS | Smooth animations and scrolling |
+| **Memory Usage**                  | ≤ 50MB   | Peak JavaScript heap size       |
+
+### Network Budgets
+
+| Resource Type             | Budget            | Notes                                   |
+| ------------------------- | ----------------- | --------------------------------------- |
+| **Initial JavaScript**    | ≤ 200KB (gzipped) | Critical path JS bundle                 |
+| **Initial CSS**           | ≤ 50KB (gzipped)  | Above-the-fold styles                   |
+| **First Screen Images**   | ≤ 300KB total     | All images visible on load              |
+| **Total Initial Payload** | ≤ 600KB           | Everything needed for first interaction |
+
+## Detailed Requirements
+
+### JavaScript Performance
+
+#### Bundle Size Optimization
+
+```javascript
+// Webpack bundle analysis example
+const BundleAnalyzerPlugin =
+  require("webpack-bundle-analyzer").BundleAnalyzerPlugin;
+
+module.exports = {
+  plugins: [
+    new BundleAnalyzerPlugin({
+      analyzerMode: "static",
+      openAnalyzer: false,
+      reportFilename: "bundle-report.html",
+    }),
+  ],
+  optimization: {
+    splitChunks: {
+      chunks: "all",
+      cacheGroups: {
+        vendor: {
+          test: /[\\/]node_modules[\\/]/,
+          name: "vendors",
+          chunks: "all",
+        },
+      },
+    },
+  },
+};
+```
+
+#### Code Splitting Strategy
+
+```tsx
+// Route-based code splitting
+import { lazy, Suspense } from "react";
+
+const HomePage = lazy(() => import("./HomePage"));
+const GamePage = lazy(() => import("./GamePage"));
+const ProfilePage = lazy(() => import("./ProfilePage"));
+
+function App() {
+  return (
+    <Suspense fallback={<LoadingSkeleton />}>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/game" element={<GamePage />} />
+        <Route path="/profile" element={<ProfilePage />} />
+      </Routes>
+    </Suspense>
+  );
+}
+
+// Component-based code splitting
+const HeavyChart = lazy(() =>
+  import("./HeavyChart").then((module) => ({
+    default: module.HeavyChart,
+  }))
+);
+
+function Dashboard() {
+  const [showChart, setShowChart] = useState(false);
+
+  return (
+    <div>
+      <DashboardHeader />
+      {showChart && (
+        <Suspense fallback={<ChartSkeleton />}>
+          <HeavyChart />
+        </Suspense>
+      )}
+      <button onClick={() => setShowChart(true)}>Show Advanced Chart</button>
+    </div>
+  );
+}
+```
+
+### CSS Performance
+
+#### Critical CSS Inlining
+
+```html
+<!-- Inline critical CSS for above-the-fold content -->
+<style>
+  /* Critical styles for first screen */
+  .app-container {
+    max-width: 100vw;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(
+        safe-area-inset-bottom
+      ) env(safe-area-inset-left);
+  }
+
+  .hero-section {
+    min-height: 50vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+</style>
+
+<!-- Load non-critical CSS asynchronously -->
+<link
+  rel="preload"
+  href="/styles/non-critical.css"
+  as="style"
+  onload="this.onload=null;this.rel='stylesheet'"
+/>
+<noscript><link rel="stylesheet" href="/styles/non-critical.css" /></noscript>
+```
+
+#### CSS Optimization
+
+```css
+/* Use efficient selectors */
+.button-primary {
+  /* Good: class selector */
+}
+#header .nav > ul li a {
+  /* Avoid: overly specific */
+}
+
+/* Minimize expensive properties */
+.smooth-animation {
+  /* Prefer transform/opacity for animations */
+  transform: translateX(100px);
+  opacity: 0.8;
+
+  /* Avoid layout-triggering properties */
+  /* width: 100px; ❌ Triggers layout */
+  /* height: 50px; ❌ Triggers layout */
+}
+
+/* Use CSS containment for performance */
+.card-container {
+  contain: layout style paint;
+}
+```
+
+### Image Optimization
+
+#### Responsive Images
+
+```html
+<!-- Use srcset for different screen densities -->
+<img
+  src="hero-800.jpg"
+  srcset="hero-400.jpg 400w, hero-800.jpg 800w, hero-1200.jpg 1200w"
+  sizes="(max-width: 600px) 400px,
+         (max-width: 900px) 800px,
+         1200px"
+  alt="App hero image"
+  loading="lazy"
+/>
+
+<!-- Modern format support with fallbacks -->
+<picture>
+  <source srcset="hero.avif" type="image/avif" />
+  <source srcset="hero.webp" type="image/webp" />
+  <img src="hero.jpg" alt="App hero image" />
+</picture>
+```
+
+#### Image Loading Strategy
+
+```tsx
+// Progressive image loading component
+function OptimizedImage({ src, alt, className, priority = false }) {
+  const [loaded, setLoaded] = useState(false);
+  const [error, setError] = useState(false);
+
+  return (
+    <div className={`image-container ${className}`}>
+      {!loaded && !error && <ImageSkeleton />}
+
+      <img
+        src={src}
+        alt={alt}
+        loading={priority ? "eager" : "lazy"}
+        onLoad={() => setLoaded(true)}
+        onError={() => setError(true)}
+        style={{
+          opacity: loaded ? 1 : 0,
+          transition: "opacity 0.3s ease",
+        }}
+      />
+
+      {error && <ImageErrorState />}
+    </div>
+  );
+}
+```
+
+### Network Optimization
+
+#### Resource Hints
+
+```html
+<!-- Preload critical resources -->
+<link
+  rel="preload"
+  href="/fonts/inter.woff2"
+  as="font"
+  type="font/woff2"
+  crossorigin
+/>
+<link rel="preload" href="/api/initial-data" as="fetch" crossorigin />
+
+<!-- Prefetch likely next resources -->
+<link rel="prefetch" href="/game/assets.js" />
+<link rel="prefetch" href="/profile/components.js" />
+
+<!-- Preconnect to external domains -->
+<link rel="preconnect" href="https://api.base.org" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+```
+
+#### Caching Strategy
+
+```javascript
+// Service Worker caching example
+const CACHE_NAME = "miniapp-v1";
+const STATIC_ASSETS = ["/", "/app.js", "/app.css", "/manifest.json"];
+
+self.addEventListener("install", (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
+  );
+});
+
+self.addEventListener("fetch", (event) => {
+  if (event.request.destination === "image") {
+    // Cache images with stale-while-revalidate
+    event.respondWith(
+      caches.match(event.request).then((response) => {
+        if (response) {
+          // Serve from cache, update in background
+          fetch(event.request).then((fetchResponse) => {
+            const responseClone = fetchResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseClone);
+            });
+          });
+          return response;
+        }
+        return fetch(event.request);
+      })
+    );
+  }
+});
+```
+
+## Testing & Measurement
+
+### Lighthouse Testing
+
+Use Lighthouse to validate performance:
+
+```bash
+# Test with mobile settings
+lighthouse --preset=mobile --output=html --output-path=./report.html https://your-app.com
+
+# Test specific performance budget
+lighthouse --budget-path=./budget.json https://your-app.com
+```
+
+#### Budget Configuration
+
+```json
+// budget.json
+[
+  {
+    "resourceSizes": [
+      {
+        "resourceType": "script",
+        "budget": 200
+      },
+      {
+        "resourceType": "stylesheet",
+        "budget": 50
+      },
+      {
+        "resourceType": "image",
+        "budget": 300
+      }
+    ],
+    "timings": [
+      {
+        "metric": "first-contentful-paint",
+        "budget": 1200
+      },
+      {
+        "metric": "largest-contentful-paint",
+        "budget": 2500
+      }
+    ]
+  }
+]
+```
+
+### Performance Monitoring
+
+```tsx
+// Web Vitals monitoring
+import { getCLS, getFID, getFCP, getLCP, getTTFB } from "web-vitals";
+
+function sendToAnalytics(metric) {
+  // Send performance data to your analytics service
+  analytics.track("Web Vital", {
+    name: metric.name,
+    value: metric.value,
+    id: metric.id,
+    rating: metric.rating,
+  });
+}
+
+// Measure all Web Vitals
+getCLS(sendToAnalytics);
+getFID(sendToAnalytics);
+getFCP(sendToAnalytics);
+getLCP(sendToAnalytics);
+getTTFB(sendToAnalytics);
+
+// Custom performance tracking
+function trackCustomMetric(name, value) {
+  performance.mark(`${name}-start`);
+  // ... your code ...
+  performance.mark(`${name}-end`);
+  performance.measure(name, `${name}-start`, `${name}-end`);
+
+  const measure = performance.getEntriesByName(name)[0];
+  sendToAnalytics({
+    name,
+    value: measure.duration,
+    rating: measure.duration < 100 ? "good" : "needs-improvement",
+  });
+}
+```
+
+### Real User Monitoring
+
+```javascript
+// Performance observer for real user metrics
+const observer = new PerformanceObserver((list) => {
+  for (const entry of list.getEntries()) {
+    if (entry.entryType === "navigation") {
+      sendToAnalytics({
+        name: "page-load-time",
+        value: entry.loadEventEnd - entry.fetchStart,
+      });
+    }
+
+    if (entry.entryType === "resource") {
+      if (entry.transferSize > 1000000) {
+        // > 1MB
+        console.warn(
+          "Large resource detected:",
+          entry.name,
+          entry.transferSize
+        );
+      }
+    }
+  }
+});
+
+observer.observe({ entryTypes: ["navigation", "resource"] });
+```
+
+## Common Performance Issues
+
+### ❌ JavaScript Problems
+
+#### Bundle Bloat
+
+```javascript
+// Bad: Importing entire library
+import _ from "lodash"; // Imports all of lodash
+
+// Good: Import only what you need
+import { debounce, throttle } from "lodash-es";
+
+// Bad: Large polyfills for all browsers
+import "core-js/stable";
+
+// Good: Targeted polyfills
+import "core-js/features/array/flat";
+```
+
+#### Inefficient Rendering
+
+```tsx
+// Bad: Expensive operations in render
+function ExpensiveComponent({ data }) {
+  const processedData = data.map((item) => {
+    // Heavy computation on every render
+    return expensiveCalculation(item);
+  });
+
+  return (
+    <div>
+      {processedData.map((item) => (
+        <Item key={item.id} {...item} />
+      ))}
+    </div>
+  );
+}
+
+// Good: Memoize expensive calculations
+function OptimizedComponent({ data }) {
+  const processedData = useMemo(() => {
+    return data.map((item) => expensiveCalculation(item));
+  }, [data]);
+
+  return (
+    <div>
+      {processedData.map((item) => (
+        <Item key={item.id} {...item} />
+      ))}
+    </div>
+  );
+}
+```
+
+### ❌ CSS Problems
+
+#### Inefficient Selectors
+
+```css
+/* Bad: Complex selectors */
+.app .main .content .card .header .title {
+}
+
+/* Good: Simple class-based selectors */
+.card-title {
+}
+
+/* Bad: Universal selectors */
+* {
+  box-sizing: border-box;
+}
+
+/* Good: Scoped resets */
+.app *,
+.app *::before,
+.app *::after {
+  box-sizing: border-box;
+}
+```
+
+#### Layout Thrashing
+
+```css
+/* Bad: Properties that trigger layout */
+.animation {
+  transition: width 0.3s, height 0.3s, top 0.3s;
+}
+
+/* Good: Transform and opacity only */
+.animation {
+  transition: transform 0.3s, opacity 0.3s;
+}
+```
+
+### ❌ Image Problems
+
+#### Unoptimized Images
+
+```html
+<!-- Bad: Single large image for all devices -->
+<img src="hero-2000x1000.jpg" width="100%" />
+
+<!-- Good: Responsive images -->
+<img
+  src="hero-800.jpg"
+  srcset="hero-400.jpg 400w, hero-800.jpg 800w, hero-1200.jpg 1200w"
+  sizes="(max-width: 600px) 400px, (max-width: 900px) 800px, 1200px"
+/>
+```
+
+## Performance Optimization Checklist
+
+### Build Optimization
+
+- [ ] **Tree Shaking**: Remove unused code from bundles
+- [ ] **Code Splitting**: Split routes and heavy components
+- [ ] **Bundle Analysis**: Identify and remove bloat
+- [ ] **Compression**: Enable gzip/brotli on server
+- [ ] **Minification**: Minify JavaScript, CSS, and HTML
+
+### Runtime Optimization
+
+- [ ] **Lazy Loading**: Defer non-critical resources
+- [ ] **Memoization**: Cache expensive calculations
+- [ ] **Virtual Scrolling**: For long lists
+- [ ] **Image Optimization**: Use appropriate formats and sizes
+- [ ] **Debouncing**: Limit expensive operations
+
+### Network Optimization
+
+- [ ] **CDN**: Use CDN for static assets
+- [ ] **Caching**: Implement proper cache headers
+- [ ] **Compression**: Compress text-based resources
+- [ ] **Resource Hints**: Preload critical resources
+- [ ] **HTTP/2**: Use modern protocols
+
+### Measurement
+
+- [ ] **Lighthouse Audit**: Score ≥ 85 on mobile
+- [ ] **Real User Monitoring**: Track actual user performance
+- [ ] **Performance Budget**: Stay within defined limits
+- [ ] **Core Web Vitals**: Meet Google's standards
+- [ ] **Device Testing**: Test on low-end devices
+
+## Resources
+
+- **[Asset Specifications](/base-app/performance/asset-specifications)**: Image size and format requirements
+- **[Optimization Techniques](/base-app/performance/optimization-techniques)**: Advanced optimization strategies
+- **[Quality Checklist](/base-app/quality/checklist)**: Complete performance requirements
+
+<Note>
+**Continuous Monitoring**
+
+Performance is not a one-time optimization. Continuously monitor your app's performance and address regressions quickly to maintain featuring eligibility.
+
+</Note>

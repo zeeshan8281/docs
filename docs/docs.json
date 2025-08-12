@@ -379,20 +379,55 @@
         "tab": "Base App",
         "groups": [
           {
-            "group": "Introduction",
+            "group": "Quick Start",
             "pages": [
-              "base-app/introduction/beta-faq",
               "base-app/introduction/getting-started",
-              "base-app/introduction/why-mini-apps"
+              "base-app/miniapps/quickstart",
+              "base-app/miniapps/existing-app-integration",
+              "base-app/miniapps/manifest"
             ]
           },
           {
-            "group": "MiniApps",
+            "group": "Design & UX Standards",
             "pages": [
-              "base-app/miniapps/overview",
-              "base-app/miniapps/quickstart",
-              "base-app/miniapps/existing-app-integration",
-              "base-app/miniapps/thinking-social",
+              "base-app/design/principles",
+              "base-app/design/ui-patterns",
+              "base-app/design/accessibility",
+              "base-app/design/figma-ui-kit"
+            ]
+          },
+          {
+            "group": "Performance & Assets",
+            "pages": [
+              "base-app/performance/budgets",
+              "base-app/performance/asset-specifications",
+              "base-app/performance/optimization-techniques"
+            ]
+          },
+          {
+            "group": "Quality Bar & Publishing",
+            "pages": [
+              "base-app/quality/checklist",
+              "base-app/quality/getting-featured",
+              "base-app/quality/submission-workflow",
+              "base-app/quality/validation"
+            ]
+          },
+          {
+            "group": "Growth & Analytics",
+            "pages": [
+              "base-app/growth/event-schema",
+              "base-app/growth/analytics-integration",
+              "base-app/growth/distribution-categories"
+            ]
+          },
+          {
+            "group": "Supporting Guides",
+            "pages": [
+              "base-app/guides/authentication",
+              "base-app/guides/language-tone",
+              "base-app/guides/error-handling",
+              "base-app/guides/templates-starters",
               "base-app/miniapps/debugging"
             ]
           },
@@ -405,6 +440,18 @@
               "base-app/agents/transaction-trays",
               "base-app/agents/best-practices",
               "base-app/agents/getting-featured"
+            ]
+          },
+          {
+            "group": "Additional Resources",
+            "pages": [
+              "base-app/introduction/beta-faq",
+              "base-app/introduction/why-mini-apps",
+              "base-app/miniapps/overview",
+              "base-app/miniapps/thinking-social",
+              "base-app/guides/chat-agents",
+              "base-app/guides/search-and-discovery",
+              "base-app/guides/sharing-your-miniapp"
             ]
           }
         ]

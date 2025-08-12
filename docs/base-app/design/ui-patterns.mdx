@@ -1,0 +1,166 @@
+---
+title: "UI Patterns"
+description: "Copy‑paste components and patterns for common Base MiniApp flows"
+---
+
+# UI Patterns
+
+Practical, copy‑pasteable patterns aligned with the Design Principles and Quality Bar. Use these to ship fast and consistently.
+
+## First‑run value screen
+
+```tsx
+export function FirstRun() {
+  return (
+    <section className="first-run">
+      <h1>Play daily trivia, win USDC</h1>
+      <p>Test your knowledge and climb the leaderboard</p>
+      <PrimaryButton>Start playing</PrimaryButton>
+      <TextLink href="#leaderboard">View leaderboard</TextLink>
+    </section>
+  );
+}
+```
+
+Guidelines:
+
+- Keep title ≤ 80 chars; describe outcome
+- One primary action; one secondary pathway
+- No auth gate on first screen
+
+## List + skeleton loading
+
+```tsx
+function ListSkeleton() {
+  return (
+    <div className="list-skeleton">
+      {[...Array(6)].map((_, i) => (
+        <div key={i} className="row" />
+      ))}
+    </div>
+  );
+}
+
+export function ListExample({ items, isLoading }) {
+  if (isLoading) return <ListSkeleton />;
+  if (!items?.length) return <EmptyState />;
+
+  return (
+    <ul className="list">
+      {items.map((item) => (
+        <li key={item.id} className="card">
+          <h3>{item.title}</h3>
+          <p>{item.subtitle}</p>
+        </li>
+      ))}
+    </ul>
+  );
+}
+```
+
+CSS excerpt:
+
+```css
+.list-skeleton .row {
+  height: 56px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #eee, #f5f5f5, #eee);
+  animation: pulse 1.2s infinite;
+}
+@keyframes pulse {
+  0% {
+    background-position: 0% 0;
+  }
+  100% {
+    background-position: 100% 0;
+  }
+}
+```
+
+## Empty state
+
+```tsx
+function EmptyState() {
+  return (
+    <div className="empty">
+      <Icon name="inbox" />
+      <h3>No items yet</h3>
+      <p>Try creating your first item to get started</p>
+      <PrimaryButton>Create item</PrimaryButton>
+    </div>
+  );
+}
+```
+
+Checklist:
+
+- Explain situation plainly
+- Provide one clear next action
+- Avoid technical language
+
+## Toast vs modal
+
+Use toast for lightweight confirmation; modal for single focused tasks.
+
+```tsx
+// Toast
+showToast({ title: "Saved", description: "Your changes were saved" });
+
+// Modal
+<Modal>
+  <h3>Confirm transfer</h3>
+  <p>Send 5 USDC to @alex?</p>
+  <PrimaryButton>Send</PrimaryButton>
+  <SecondaryButton>Cancel</SecondaryButton>
+</Modal>;
+```
+
+Rules:
+
+- Toasts auto-dismiss; do not block navigation
+- Modals: one decision, max two actions, escape route always present
+
+## Optimistic action with undo
+
+```tsx
+async function onDelete(itemId: string) {
+  removeItemLocally(itemId); // optimistic
+  const ok = await api.delete(itemId).catch(() => false);
+  if (!ok) {
+    restoreItem(itemId);
+    showToast({ title: "Couldn’t delete", description: "Try again" });
+  } else {
+    showToast({
+      title: "Deleted",
+      action: { label: "Undo", onClick: () => restoreItem(itemId) },
+    });
+  }
+}
+```
+
+## Auth prompt pattern
+
+```tsx
+AuthPrompt({
+  title: "Continue with Base",
+  reason: "Save your progress and compete with friends",
+  benefits: ["Track streaks", "Earn rewards", "Share achievements"],
+});
+```
+
+## Motion
+
+- 200–300ms ease‑out for transitions
+- Respect prefers‑reduced‑motion
+- Avoid blocking progress with full‑screen loaders
+
+## Safe areas
+
+Use `env(safe-area-inset-*)` and provide padding tokens as in Design Principles.
+
+## Pattern checklist
+
+- Clear value, single primary action
+- Skeletons for loading, meaningful empty states
+- Non‑blocking feedback; accessible focus/roles
+- Works in light/dark; respects safe areas and touch targets

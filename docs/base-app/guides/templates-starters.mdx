@@ -1,0 +1,58 @@
+---
+title: "Templates & Starters"
+description: "Official MiniApp starters with best practices built-in"
+---
+
+# Templates & Starters
+
+Kickstart development with opinionated starters that meet the Quality Bar.
+
+## Browse‑first (no auth)
+
+Includes:
+
+- First‑run value screen
+- List/detail with skeletons and empty states
+- Optional personalization panel
+
+## Action‑gated auth
+
+Includes:
+
+- Value first, auth prompt second with reason and benefits
+- Graceful decline path and demo mode
+- Optimistic actions with undo
+
+## Game loop
+
+Includes:
+
+- Daily streaks and rewards
+- Lightweight animations (200–300ms)
+- Offline‑tolerant caching of progress
+
+Each starter ships with:
+
+- Safe‑area CSS tokens and layout grid
+- Copy rules and banned‑terms linter config
+- Image pipeline (sharp/imagemin) with byte caps
+
+Install via CLI (coming soon):
+
+```bash
+npx create-base-mini-app
+```
+
+## Local starter examples
+
+The repository includes three minimal starters under `starters/`:
+
+- `starters/browse-first`
+- `starters/action-gated`
+- `starters/game-loop`
+
+Run locally:
+
+```bash
+cd starters/browse-first && npm install && npm run dev
+```

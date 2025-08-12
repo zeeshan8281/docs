@@ -1,0 +1,13 @@
+{
+  "name": "minikit-cli",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "mini-kit": "./bin/mini-kit.mjs"
+  },
+  "dependencies": {
+    "globby": "^13.2.2",
+    "image-size": "^1.0.2"
+  }
+}

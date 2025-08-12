@@ -1,0 +1,39 @@
+---
+title: "Event Schema"
+description: "Recommended analytics events for MiniApps"
+---
+
+# Event Schema
+
+Track consistent events to power growth and quality decisions.
+
+## Core events
+
+| Event               | When                   | Properties                    |
+| ------------------- | ---------------------- | ----------------------------- |
+| `MINI_APP_OPEN`     | App opened             | `source`, `version`           |
+| `PRIMARY_CTA_CLICK` | Primary action clicked | `cta_id`, `surface`           |
+| `AUTH_PROMPT`       | Auth prompt shown      | `reason`, `surface`           |
+| `AUTH_SUCCESS`      | Auth success           | `latency_ms`, `method`        |
+| `TX_SUBMIT`         | Transaction submitted  | `tx_type`, `network`          |
+| `TX_SUCCESS`        | Transaction confirmed  | `latency_ms`, `amount`        |
+| `ERROR`             | Error occurred         | `code`, `category`, `surface` |
+
+## Error categories
+
+- `network_offline`
+- `auth_declined`
+- `rate_limited`
+- `contract_failure`
+- `validation`
+
+## Example payload
+
+```js
+analytics.track("TX_SUCCESS", {
+  tx_type: "mint",
+  network: "base-mainnet",
+  latency_ms: 12400,
+  amount: "1",
+});
+```

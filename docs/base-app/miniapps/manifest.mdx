@@ -1,0 +1,51 @@
+---
+title: "Manifest Configuration"
+description: "Define your MiniApp manifest with clear specs and byte caps"
+---
+
+# Manifest Configuration
+
+Configure your MiniApp’s `frame` manifest with explicit asset byte caps and metadata for discovery.
+
+## Required fields
+
+```json
+{
+  "frame": {
+    "name": "Your App",
+    "subtitle": "Short value prop",
+    "iconUrl": "https://.../icon-512.png", // <= 60 KB
+    "splashImageUrl": "https://.../splash-200.png", // <= 40 KB
+    "splashBackgroundColor": "#0B0B0C",
+    "heroImageUrl": "https://.../hero-1200x628.jpg", // <= 250 KB
+    "screenshotUrls": ["https://.../shot1.jpg"], // up to 3, <= 500 KB each
+    "primaryCategory": "games",
+    "noindex": true
+  }
+}
+```
+
+## Asset caps (unified)
+
+| Asset       | Dimensions | Max size            |
+| ----------- | ---------- | ------------------- |
+| Icon        | 512×512    | 60 KB               |
+| Splash      | 200×200    | 40 KB               |
+| Hero        | 1200×628   | 250 KB              |
+| Open Graph  | 1200×630   | 250 KB              |
+| Screenshots | variable   | 500 KB each (max 3) |
+
+See also: [Asset Specifications](/base-app/performance/asset-specifications)
+
+## Validation
+
+```bash
+# Validate manifest and assets
+mini-kit doctor /path/to/your/app
+```
+
+## Tips
+
+- Host images on a CDN with long cache headers
+- Serve WebP/AVIF with fallbacks; downscale to target bytes
+- Keep `noindex: true` until you’re ready to launch

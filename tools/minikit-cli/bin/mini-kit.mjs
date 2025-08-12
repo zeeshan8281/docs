@@ -1,0 +1,229 @@
+#!/usr/bin/env node
+import { argv, exit } from "node:process";
+import {
+  readFileSync,
+  existsSync,
+  statSync,
+  writeFileSync,
+  mkdirSync,
+} from "node:fs";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+import { globby } from "globby";
+import imageSize from "image-size";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+function loadConfig(baseDir) {
+  const root = baseDir || process.cwd();
+  const configPath = join(root, "minikit.config.json");
+  if (!existsSync(configPath)) {
+    return {
+      bannedTerms: [
+        "connect wallet",
+        "authenticate",
+        "farcaster",
+        "web3",
+        "dapp",
+        "smart contract",
+        "mint nft",
+        "stake tokens",
+        "sign transaction",
+        "ens domain",
+      ],
+      assets: {
+        icon: { width: 512, height: 512, maxBytes: 60_000 },
+        splash: { width: 200, height: 200, maxBytes: 40_000 },
+        hero: { width: 1200, height: 628, maxBytes: 250_000 },
+        og: { width: 1200, height: 630, maxBytes: 250_000 },
+      },
+    };
+  }
+  return JSON.parse(readFileSync(configPath, "utf8"));
+}
+
+function printUsage() {
+  console.log(
+    `mini-kit <command> [options]\n\nCommands:\n  lint-copy [path]          Scan files for banned terms\n  validate-assets [path]    Validate image dimensions and sizes\n  doctor                    Run copy + assets checks\n  scaffold <name>           Create a MiniApp skeleton (flags: --template=browse-first|action-gated, --immediate-auth=true|false)`
+  );
+}
+
+function textFilePatterns() {
+  return ["**/*.mdx", "**/*.md", "**/*.tsx", "**/*.ts", "**/*.jsx", "**/*.js"];
+}
+
+async function lintCopy(pathArg) {
+  const base = pathArg || process.cwd();
+  const config = loadConfig(base);
+  const patterns = textFilePatterns();
+  const cfg = loadConfig(base);
+  const configExclude = (cfg.copyLint && cfg.copyLint.exclude) || [];
+  const files = await globby(patterns, {
+    gitignore: true,
+    cwd: base,
+    absolute: true,
+    ignore: configExclude,
+  });
+  let issues = 0;
+  for (const file of files) {
+    let content = readFileSync(file, "utf8");
+    // For markdown, ignore code fences and inline code to reduce false positives
+    if (file.endsWith(".mdx") || file.endsWith(".md")) {
+      content = content
+        // strip fenced code blocks ``` ... ``` (including language tags)
+        .replace(/```[\s\S]*?```/g, " ")
+        // strip inline code `...`
+        .replace(/`[^`]*`/g, " ");
+    }
+    content = content.toLowerCase();
+    for (const term of config.bannedTerms) {
+      if (content.includes(term)) {
+        issues++;
+        const suggestion = config.suggestions?.[term];
+        console.log(
+          `Copy lint: ${file} contains banned term: "${term}"${
+            suggestion ? ` → try: "${suggestion}"` : ""
+          }`
+        );
+      }
+    }
+  }
+  if (issues > 0) {
+    console.log(`\nFound ${issues} copy issue(s).`);
+    return 1;
+  }
+  console.log("No copy issues found.");
+  return 0;
+}
+
+async function validateAssets(pathArg) {
+  const base = pathArg || process.cwd();
+  const config = loadConfig(base);
+  const images = await globby(["**/*.{png,jpg,jpeg}"], {
+    gitignore: true,
+    cwd: base,
+    absolute: true,
+  });
+  let failures = 0;
+  const checks = [
+    { key: "icon", hint: /icon/i },
+    { key: "splash", hint: /splash/i },
+    { key: "hero", hint: /hero/i },
+    { key: "og", hint: /(og|open-?graph)/i },
+  ];
+  for (const file of images) {
+    const stats = imageSize(file);
+    const sizeBytes = statSync(file).size;
+    for (const { key, hint } of checks) {
+      if (hint.test(file)) {
+        const spec = config.assets[key];
+        if (!spec) continue;
+        if (stats.width !== spec.width || stats.height !== spec.height) {
+          failures++;
+          console.log(
+            `Asset invalid: ${file} expected ${spec.width}x${spec.height}, got ${stats.width}x${stats.height}`
+          );
+        }
+        if (sizeBytes > spec.maxBytes) {
+          failures++;
+          console.log(
+            `Asset too large: ${file} size ${sizeBytes}B > ${spec.maxBytes}B`
+          );
+        }
+      }
+    }
+  }
+  if (failures > 0) {
+    console.log(`\nFound ${failures} asset issue(s).`);
+    return 1;
+  }
+  console.log("Assets look good.");
+  return 0;
+}
+
+async function doctor(basePath) {
+  const target = basePath || process.cwd();
+  const copy = await lintCopy(target);
+  const assets = await validateAssets(target);
+  const code = copy || assets;
+  if (code !== 0) {
+    console.log("\nDoctor found issues. See output above.");
+  } else {
+    console.log("All checks passed.");
+  }
+  return code;
+}
+
+function scaffoldTemplate({
+  name,
+  template = "browse-first",
+  immediateAuth = false,
+}) {
+  const root = join(process.cwd(), name);
+  mkdirSync(join(root, "src"), { recursive: true });
+  const readme = `# ${name}\n\nMiniApp scaffold generated by mini-kit.\n\nTemplate: ${template}\nImmediate auth: ${
+    immediateAuth ? "yes" : "no"
+  }\n`;
+  const indexHtml = `<!doctype html>\n<html><head><meta charset=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><title>${name}</title></head><body><div id=\"root\"></div><script type=\"module\" src=\"/src/main.tsx\"></script></body></html>`;
+  const mainTsx = `import React from 'react';\nimport { createRoot } from 'react-dom/client';\nimport { App } from './App';\nconst root = createRoot(document.getElementById('root')!);\nroot.render(<App />);\n`;
+  const appBrowse = `import React, { useState } from 'react';\nexport function App() {\n  const [view, setView] = useState('browse');\n  const isAuthenticated = false; // wire real auth\n  async function authenticate() { /* prompt with reason */ }\n  return (\n    <div className=\"app\">\n      {view==='browse' && (\n        <>\n          <h1>Play daily trivia, win USDC</h1>\n          <button onClick={async ()=>{ if(!isAuthenticated){ await authenticate(); } setView('play'); }}>Start playing</button>\n          <button onClick={()=>setView('personalize')}>Personalize experience</button>\n        </>\n      )}\n      {view==='personalize' && <>\n        <h2>Personalize</h2>\n        <button onClick={()=>setView('browse')}>Back</button>\n      </>}\n      {view==='play' && <h2>Game</h2>}\n    </div>\n  );\n}\n`;
+  const appActionGated = `import React, { useState } from 'react';\nexport function App() {\n  const [view, setView] = useState('value');\n  const isAuthenticated = false;\n  async function authenticate() { /* prompt with reason */ }\n  return (\n    <div className=\"app\">\n      {view==='value' && (\n        <>\n          <h1>Track your crypto portfolio</h1>\n          <p>Real-time updates and alerts</p>\n          <button onClick={async()=>{ ${'${immediateAuth ? "await authenticate();" : ""}'} setView('portfolio'); }}>Get started</button>\n          <button onClick={()=>setView('demo')}>Try demo first</button>\n        </>\n      )}\n      {view==='demo' && <h2>Demo portfolio</h2>}\n      {view==='portfolio' && <h2>Your portfolio</h2>}\n    </div>\n  );\n}\n`;
+  const appTsx = template === "action-gated" ? appActionGated : appBrowse;
+  const pkg = `{\n  \"name\": \"${name}\",\n  \"private\": true,\n  \"type\": \"module\",\n  \"scripts\": { \"dev\": \"vite\" },\n  \"devDependencies\": { \"vite\": \"^5.4.0\", \"@types/react\": \"^18.3.0\", \"@types/react-dom\": \"^18.3.0\" },\n  \"dependencies\": { \"react\": \"^18.3.0\", \"react-dom\": \"^18.3.0\" }\n}`;
+  writeFileSync(join(root, "README.md"), readme, "utf8");
+  writeFileSync(join(root, "index.html"), indexHtml, "utf8");
+  writeFileSync(join(root, "src/main.tsx"), mainTsx, "utf8");
+  writeFileSync(join(root, "src/App.tsx"), appTsx, "utf8");
+  writeFileSync(join(root, "package.json"), pkg, "utf8");
+}
+
+async function main() {
+  const cmd = argv[2];
+  const arg = argv[3];
+  try {
+    if (!cmd || cmd === "help" || cmd === "--help" || cmd === "-h") {
+      printUsage();
+      return exit(0);
+    }
+    if (cmd === "lint-copy") {
+      const code = await lintCopy(arg || process.cwd());
+      return exit(code);
+    }
+    if (cmd === "validate-assets") {
+      const code = await validateAssets(arg || process.cwd());
+      return exit(code);
+    }
+    if (cmd === "doctor") {
+      const code = await doctor(arg);
+      return exit(code);
+    }
+    if (cmd === "scaffold") {
+      const name = arg || "miniapp";
+      const templateArg = (
+        argv.find((a) => a.startsWith("--template=")) ||
+        "--template=browse-first"
+      ).split("=")[1];
+      const immediateAuthArg =
+        (
+          argv.find((a) => a.startsWith("--immediate-auth=")) ||
+          "--immediate-auth=false"
+        ).split("=")[1] === "true";
+      scaffoldTemplate({
+        name,
+        template: templateArg,
+        immediateAuth: immediateAuthArg,
+      });
+      console.log(`Scaffold created at ./${name}`);
+      return exit(0);
+    }
+    console.error(`Unknown command: ${cmd}`);
+    printUsage();
+    exit(1);
+  } catch (e) {
+    console.error("mini-kit error:", e?.message || e);
+    exit(1);
+  }
+}
+
+main();

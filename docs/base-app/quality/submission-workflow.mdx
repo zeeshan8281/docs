@@ -1,0 +1,62 @@
+---
+title: "Submission Workflow"
+description: "How to submit your MiniApp for review and featuring"
+---
+
+# Submission Workflow
+
+Follow this process to request review and potential featuring.
+
+## 1) Validate locally
+
+```bash
+mini-kit doctor      # manifest + assets + basic perf
+mini-kit lint-copy   # copy/style rules
+mini-kit lighthouse  # mobile webview profile
+```
+
+## 2) Prepare materials
+
+- Loom walkthrough ≤ 2 minutes (value, flows, light/dark)
+- Lighthouse report (attach HTML or link)
+- Manifest URL, live URL, assets (icon/hero/screenshots)
+
+## 3) Open a GitHub issue
+
+Use the Featuring Request template:
+
+```md
+## Base MiniApp Featuring Request
+
+### App Information
+
+- Name:
+- Category:
+- Manifest URL:
+- Live URL:
+
+### Quality Validation
+
+- [ ] Quality Bar passed
+- [ ] Performance budgets met
+- [ ] Copy validated
+- [ ] Assets validated
+
+### Links
+
+- Loom walkthrough:
+- Lighthouse report:
+```
+
+## 4) Review timeline
+
+- Initial triage: 1–2 business days
+- Editorial review: 3–5 business days
+- Decision & feedback: 1–2 business days
+
+## 5) After approval
+
+- Coordinate featuring slot and hero image
+- Monitor metrics; address any regressions
+
+See also: [Getting Featured](/base-app/quality/getting-featured) and [Quality Bar](/base-app/quality/checklist).

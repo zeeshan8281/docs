@@ -1,0 +1,312 @@
+---
+title: "Getting Featured"
+description: "Criteria and process for featuring your Base MiniApp in the Base App carousel and categories"
+---
+
+# Getting Featured
+
+Getting featured in the Base App carousel or category highlights significantly increases your MiniApp's visibility and user acquisition. This page outlines the criteria, process, and requirements for featuring eligibility.
+
+<Info>
+  **Featured Placement Benefits** - Prime carousel placement in Base App -
+  Category highlighting and priority placement - Increased organic discovery and
+  downloads - Access to Base ecosystem promotion opportunities
+</Info>
+
+## Featuring Criteria
+
+### Basic Eligibility Requirements
+
+All MiniApps must meet these requirements before being considered for featuring:
+
+#### ✅ Quality Bar Compliance
+
+- **Complete Quality Checklist**: Pass all items in the [Quality Bar Checklist](/base-app/quality/checklist)
+- **Performance Standards**: Meet all performance budgets and load time requirements
+- **Asset Compliance**: All images meet size and dimension specifications
+- **Copy Standards**: Follow language and tone guidelines with no crypto jargon
+
+#### ✅ User Experience Standards
+
+- **Guest-First Design**: Users can explore core value without authentication
+- **Clear Value Proposition**: Purpose understood within 5 seconds of opening
+- **Professional Design**: High-quality visuals and consistent user interface
+- **Error Handling**: Comprehensive error states and recovery flows
+
+#### ✅ Technical Requirements
+
+- **Stable Performance**: No crashes or critical bugs reported
+- **Fast Loading**: First interaction available ≤ 1.5 seconds
+- **Responsive Design**: Works flawlessly on all supported devices
+- **Network Reliability**: Graceful handling of poor network conditions
+
+### Additional Featuring Factors
+
+Beyond basic eligibility, featuring decisions consider these factors:
+
+#### 📊 User Engagement Metrics
+
+- **7-Day Retention**: ≥ 20% users return within a week
+- **Session Duration**: Average session ≥ 2 minutes for interactive apps
+- **Completion Rates**: High task completion for primary user flows
+- **Error Rates**: Auth error rate < 1%, critical error rate < 0.5%
+
+#### 🎯 Category Fit & Quality
+
+- **Category Relevance**: Strong fit within designated category
+- **Competitive Differentiation**: Unique value vs. similar apps
+- **Market Demand**: Addresses real user needs and use cases
+- **Content Quality**: High-quality, original content and functionality
+
+#### 🔄 Community & Growth
+
+- **Positive Feedback**: High user ratings and positive community sentiment
+- **Organic Growth**: Sustainable user acquisition beyond paid promotion
+- **Developer Responsiveness**: Quick response to user feedback and issues
+- **Base Ecosystem Integration**: Meaningful use of Base network features
+
+## Featuring Categories
+
+### Hero Carousel
+
+**Prime placement at top of Base App**
+
+**Requirements:**
+
+- Exceptional user experience and design quality
+- Strong retention and engagement metrics
+- Broad appeal across Base App user base
+- Hero image meets promotional specifications (1200×628, ≤250KB)
+
+**Duration:** 2-4 weeks typical placement
+**Review Cycle:** Weekly editorial review
+
+### Category Features
+
+**Highlighted placement within app categories**
+
+**Requirements:**
+
+- Strong fit within specific category
+- High quality relative to category peers
+- Consistent performance metrics
+- Category-specific value proposition
+
+**Duration:** 1-2 months typical placement
+**Review Cycle:** Bi-weekly category review
+
+### New & Noteworthy
+
+**Showcase for recently launched quality apps**
+
+**Requirements:**
+
+- Recently launched (within 30 days)
+- Meets all quality bar requirements
+- Demonstrates innovation or unique approach
+- Active developer engagement
+
+**Duration:** 2-3 weeks placement
+**Review Cycle:** Weekly new app review
+
+## Submission Process
+
+### Step 1: Pre-Submission Validation
+
+Before submitting for featuring consideration:
+
+```bash
+# Run complete validation suite
+mini-kit doctor
+
+# Validate copy and terminology
+mini-kit lint-copy
+
+# Check performance metrics
+mini-kit lighthouse --mobile
+```
+
+**Manual Validation:**
+
+- [ ] Complete [Quality Bar Checklist](/base-app/quality/checklist)
+- [ ] Test on iOS and Android devices
+- [ ] Verify all user flows work end-to-end
+- [ ] Confirm asset specifications compliance
+
+### Step 2: Submission Package
+
+Prepare the following materials:
+
+#### Required Submissions
+
+1. **Loom Walkthrough Video** (≤ 2 minutes)
+
+   - Show key user flows and value proposition
+   - Demonstrate guest-first experience
+   - Highlight unique features and benefits
+   - Include both light and dark mode if applicable
+
+2. **Lighthouse Performance Report**
+
+   - Mobile audit using webview profile
+   - All scores ≥ 85 (Performance, Accessibility, Best Practices)
+   - Core Web Vitals within target ranges
+
+3. **Complete App Information**
+   - App name, tagline, and description
+   - Category and relevant tags
+   - All required assets (icon, hero, screenshots)
+   - Manifest file and technical specifications
+
+#### Optional Enhancements
+
+- **User testimonials** or community feedback
+- **Usage analytics** showing retention/engagement
+- **Press coverage** or community recognition
+- **Developer story** about the app's creation and purpose
+
+### Step 3: Submission via GitHub
+
+Submit featuring requests through the structured GitHub issue template:
+
+```markdown
+## Base MiniApp Featuring Request
+
+### App Information
+
+- **App Name:** [Your App Name]
+- **Category:** [Primary Category]
+- **Manifest URL:** [Link to your manifest.json]
+- **Live App URL:** [Link to your deployed app]
+
+### Quality Validation
+
+- [ ] Quality Bar Checklist completed
+- [ ] Performance audit passed
+- [ ] Copy guidelines followed
+- [ ] Asset specifications met
+
+### Submission Materials
+
+- **Loom Walkthrough:** [Video Link]
+- **Lighthouse Report:** [Attached or linked]
+- **Additional Context:** [Any relevant notes]
+
+### Developer Information
+
+- **Developer/Team:** [Name]
+- **Contact:** [Email]
+- **Base App Username:** [If applicable]
+```
+
+### Step 4: Review Process
+
+#### Initial Review (1-2 business days)
+
+- **Automated Validation**: Technical requirements verification
+- **Quality Check**: Manual review against Quality Bar
+- **Preliminary Assessment**: Basic featuring eligibility
+
+#### Editorial Review (3-5 business days)
+
+- **User Experience Evaluation**: Hands-on testing and assessment
+- **Market Fit Analysis**: Category relevance and competitive positioning
+- **Performance Validation**: Real-world testing on target devices
+
+#### Decision & Feedback (1-2 business days)
+
+- **Featuring Decision**: Approved, approved with conditions, or declined
+- **Detailed Feedback**: Specific guidance for improvement if needed
+- **Timeline Communication**: Expected featuring schedule if approved
+
+## Maintaining Featured Status
+
+### Performance Monitoring
+
+Featured apps are continuously monitored for:
+
+- **User Retention**: Sustained 7-day retention rates
+- **Error Rates**: Maintaining low error and crash rates
+- **Performance**: Consistent load times and responsiveness
+- **User Feedback**: Community sentiment and reported issues
+
+### Requirements for Sustained Featuring
+
+- **Regular Updates**: Address user feedback and fix reported issues
+- **Performance Maintenance**: Keep metrics within target ranges
+- **Community Engagement**: Respond to user questions and feedback
+- **Quality Standards**: Continue meeting all Quality Bar requirements
+
+### Featuring Review Cycle
+
+- **Weekly Check-ins**: Basic performance and error rate monitoring
+- **Monthly Deep Dive**: Comprehensive review of featured apps
+- **Quarterly Planning**: Editorial calendar and featuring strategy updates
+
+## Common Rejection Reasons
+
+### Technical Issues
+
+- **Performance Problems**: Slow loading, crashes, or poor responsiveness
+- **Asset Non-Compliance**: Wrong dimensions, oversized files, or poor quality
+- **Broken Functionality**: Critical features not working or error-prone
+- **Poor Mobile Experience**: Not optimized for mobile webview constraints
+
+### User Experience Issues
+
+- **Forced Authentication**: Requiring sign-in without clear value
+- **Unclear Value**: Users can't understand the app's purpose quickly
+- **Poor Design Quality**: Inconsistent UI, bad typography, or layout issues
+- **Crypto Jargon**: Using technical terms in user-facing interface
+
+### Market & Content Issues
+
+- **Low Quality Content**: Placeholder content, broken links, or poor copywriting
+- **Category Mismatch**: App doesn't fit well in the claimed category
+- **Duplicate Functionality**: Too similar to existing featured apps
+- **Limited Appeal**: Very narrow use case with limited user interest
+
+## Getting Help
+
+### Office Hours
+
+Join weekly Base MiniApp Quality sessions:
+
+- **When**: Fridays, 2-3 PM PT
+- **Where**: Base Discord #miniapp-office-hours
+- **Topics**: Featuring criteria, quality standards, technical questions
+
+### Resources
+
+- **[Quality Checklist](/base-app/quality/checklist)**: Complete requirements overview
+- **[Submission Workflow](/base-app/quality/submission-workflow)**: Detailed process guide
+- **[Performance Guide](/base-app/performance/budgets)**: Technical performance requirements
+- **[Design Standards](/base-app/design/principles)**: UX and design best practices
+
+### Community Support
+
+- **Discord**: #miniapps channel for community questions
+- **GitHub Discussions**: Technical discussions and feature requests
+- **Developer Newsletter**: Monthly updates on featuring and quality standards
+
+<Warning>
+**Featuring is Competitive**
+
+Featuring slots are limited and competitive. Focus on creating exceptional user experiences that provide real value to Base App users. Quality always beats speed-to-market.
+
+</Warning>
+
+## Success Stories
+
+Learn from apps that successfully achieved featuring:
+
+- **Daily Crypto Quiz**: Achieved 35% 7-day retention through clear value proposition and guest-first design
+- **Portfolio Tracker**: Featured in Finance category by focusing on simplicity and fast performance
+- **NFT Marketplace**: Hero carousel placement through exceptional visual design and smooth user experience
+
+<Note>
+**Featuring Philosophy**
+
+We prioritize apps that make the Base ecosystem more valuable for users. Focus on solving real problems with great design and execution rather than just leveraging the latest trends.
+
+</Note>

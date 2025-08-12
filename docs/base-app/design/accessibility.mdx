@@ -1,0 +1,96 @@
+---
+title: "Accessibility"
+description: "Make MiniApps usable by everyone: safe areas, contrast, motion, and semantics"
+---
+
+# Accessibility
+
+Design for everyone. Follow these requirements to pass the Quality Bar and deliver inclusive experiences.
+
+## Safe areas and touch targets
+
+- Use `env(safe-area-inset-*)` for padding
+- Minimum touch target: 44×44 px
+- Avoid placing controls near home indicator edges
+
+```css
+.app {
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(
+      safe-area-inset-bottom
+    ) env(safe-area-inset-left);
+}
+.button {
+  min-height: 44px;
+  min-width: 44px;
+}
+```
+
+## Color and contrast
+
+- Meet WCAG AA contrast (≥ 4.5:1 for body text)
+- Do not convey meaning by color alone; pair with icons/labels
+- Provide light/dark themes and preserve contrast in both
+
+## Typography
+
+- Base size ≥ 16px; avoid ultra‑light weights
+- Maintain readable line length (45–75 characters)
+- Respect user font size settings when possible
+
+## Motion and reduced motion
+
+- Keep transitions 200–300ms; no gratuitous motion
+- Respect `prefers-reduced-motion`
+
+```css
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+```
+
+## Semantics and roles
+
+- Use semantic HTML (`button`, `nav`, `main`, `h1`–`h3`)
+- Provide `aria-label` for icon‑only buttons
+- Ensure focus outlines are visible and not removed
+
+```tsx
+<button aria-label="Close dialog">
+  <Icon name="close" />
+</button>
+```
+
+## Keyboard and focus management
+
+- Trap focus within modals; return focus to trigger on close
+- Visible focus state for all interactive elements
+- Order focus logically (DOM order matches visual order)
+
+## Error messaging
+
+- Use clear language; describe cause and next step
+- Link errors to fields via `aria-describedby`
+- Do not rely solely on color to indicate errors
+
+## Media and images
+
+- Provide `alt` text for informative images
+- Mark decorative images with empty `alt=""`
+- Caption essential videos; provide transcripts when applicable
+
+## Accessibility checklist
+
+- [ ] Touch targets ≥ 44px; safe areas respected
+- [ ] Contrast ≥ 4.5:1; legible in light and dark
+- [ ] Reduced motion honored; no blocking animations
+- [ ] Semantic elements and ARIA where needed
+- [ ] Focus visible and managed in modals
+- [ ] Clear, actionable error messages
+- [ ] Images have appropriate alt text
+
+Resources: WCAG 2.2 AA, Apple HIG Accessibility

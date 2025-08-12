@@ -1,0 +1,397 @@
+---
+title: "Asset Specifications"
+description: "Unified asset requirements and specifications for Base MiniApps"
+---
+
+# Asset Specifications
+
+This page defines the exact requirements for all images and assets used in Base MiniApps. These specifications are enforced through automated validation and are required for featuring eligibility.
+
+<Warning>
+**Strict Requirements**
+
+All asset specifications must be met exactly as defined. Apps that don't comply will fail validation and won't be eligible for featuring.
+
+</Warning>
+
+## Quick Reference
+
+| Asset Type       | Dimensions | Max Size    | Format  | Purpose                      |
+| ---------------- | ---------- | ----------- | ------- | ---------------------------- |
+| **App Icon**     | 512×512px  | 60 KB       | PNG/JPG | Manifest, cards, listings    |
+| **Splash Image** | 200×200px  | 40 KB       | PNG/JPG | Loading screen background    |
+| **Hero Image**   | 1200×628px | 250 KB      | PNG/JPG | Featured placement, sharing  |
+| **Screenshots**  | Variable   | 500 KB each | PNG/JPG | App store listings (up to 3) |
+| **Open Graph**   | 1200×630px | 250 KB      | PNG/JPG | Social sharing, embeds       |
+
+## Detailed Specifications
+
+### App Icon
+
+The primary icon representing your MiniApp across Base App.
+
+**Requirements:**
+
+- **Dimensions**: 512×512 pixels (1:1 aspect ratio)
+- **File Size**: ≤ 60 KB
+- **Format**: PNG or JPG
+- **Source**: 1024×1024 source images allowed (will be downscaled)
+- **Background**: No transparency for JPG; solid background recommended for PNG
+
+**Usage:**
+
+- App cards and listings in Base App
+- Manifest `iconUrl` field
+- Search results and categories
+- User's installed apps list
+
+**Design Guidelines:**
+
+```css
+/* Icon should be recognizable at small sizes */
+.icon-preview {
+  width: 24px; /* Smallest display size */
+  height: 24px;
+  border-radius: 6px;
+}
+```
+
+**Example Implementation:**
+
+```json
+{
+  "frame": {
+    "iconUrl": "https://yourapp.com/icon-512.png"
+  }
+}
+```
+
+### Splash Image
+
+Displayed while your MiniApp loads, behind a semi-transparent overlay.
+
+**Requirements:**
+
+- **Dimensions**: 200×200 pixels (1:1 aspect ratio)
+- **File Size**: ≤ 40 KB
+- **Format**: PNG or JPG
+- **Background**: Solid color specified separately
+- **Content**: Avoid transparency; keep design simple
+
+**Usage:**
+
+- Loading screen background
+- Brief display during app initialization
+- Blurred/darkened for loading state
+
+**Manifest Configuration:**
+
+```json
+{
+  "frame": {
+    "splashImageUrl": "https://yourapp.com/splash-200.png",
+    "splashBackgroundColor": "#0B0B0C"
+  }
+}
+```
+
+**Design Tips:**
+
+- Use your logo or key brand element
+- Ensure it looks good blurred/darkened
+- Test with both light and dark background colors
+
+### Hero Image (Featured Apps)
+
+Large promotional image for featured placement and sharing.
+
+**Requirements:**
+
+- **Dimensions**: 1200×628 pixels (1.91:1 aspect ratio)
+- **File Size**: ≤ 250 KB
+- **Format**: PNG or JPG
+- **Safe Margins**: 64px from all edges for text/logos
+- **Text Size**: Any text must be ≥ 28px for readability
+
+**Usage:**
+
+- Featured carousel in Base App
+- Social media sharing
+- Marketing materials
+- Open Graph previews
+
+**Design Guidelines:**
+
+```css
+/* Safe area for important content */
+.hero-safe-area {
+  margin: 64px;
+  /* Your important content goes here */
+}
+```
+
+**Content Requirements:**
+
+- Clearly shows app purpose/value
+- High-quality visuals representing your app
+- Brand elements within safe margins
+- No misleading or clickbait imagery
+
+### Screenshots
+
+Visual previews of your app's interface and functionality.
+
+**Requirements:**
+
+- **Quantity**: Up to 3 screenshots
+- **File Size**: ≤ 500 KB each
+- **Format**: PNG or JPG
+- **Dimensions**: Variable (mobile aspect ratios recommended)
+- **Content**: Actual app interface, not mockups
+
+**Best Practices:**
+
+- Show key user flows or features
+- Use real data, not Lorem ipsum
+- Highlight unique value propositions
+- Ensure text is readable at small sizes
+
+**Recommended Dimensions:**
+
+```css
+/* Common mobile aspect ratios */
+.screenshot-iphone {
+  aspect-ratio: 9 / 19.5;
+} /* iPhone 14 */
+.screenshot-android {
+  aspect-ratio: 9 / 20;
+} /* Common Android */
+.screenshot-square {
+  aspect-ratio: 1 / 1;
+} /* For square content */
+```
+
+### Open Graph / Social Sharing
+
+Image displayed when your app is shared on social media or embedded.
+
+**Requirements:**
+
+- **Dimensions**: 1200×630 pixels (1.91:1 aspect ratio)
+- **File Size**: ≤ 250 KB
+- **Format**: PNG or JPG
+- **Purpose**: Social sharing, embeds, link previews
+
+**Implementation:**
+
+```html
+<!-- Meta tags for Open Graph -->
+<meta property="og:image" content="https://yourapp.com/og-image.jpg" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:type" content="image/jpeg" />
+```
+
+## Optimization Techniques
+
+### Image Compression
+
+Tools and techniques for meeting size requirements:
+
+**Recommended Tools:**
+
+- **Sharp** (Node.js): Automated optimization pipeline
+- **TinyPNG**: Web-based compression
+- **ImageOptim**: Mac app for lossless compression
+- **Squoosh**: Web app by Google Chrome team
+
+**Sharp Configuration Example:**
+
+```javascript
+const sharp = require("sharp");
+
+// Icon optimization
+await sharp("icon-source.png")
+  .resize(512, 512)
+  .jpeg({ quality: 85 })
+  .toFile("icon-512.jpg");
+
+// Hero image optimization
+await sharp("hero-source.png")
+  .resize(1200, 628)
+  .jpeg({ quality: 80 })
+  .toFile("hero-1200x628.jpg");
+```
+
+### Progressive Enhancement
+
+Serve different formats based on browser support:
+
+```html
+<picture>
+  <source srcset="icon.avif" type="image/avif" />
+  <source srcset="icon.webp" type="image/webp" />
+  <img src="icon.jpg" alt="App icon" width="512" height="512" />
+</picture>
+```
+
+### Responsive Images
+
+Use `srcset` for different screen densities:
+
+```html
+<img
+  src="icon-512.jpg"
+  srcset="icon-512.jpg 1x, icon-1024.jpg 2x"
+  width="256"
+  height="256"
+  alt="App icon"
+/>
+```
+
+## Server-Side Optimization
+
+### CDN Configuration
+
+Recommended headers for image delivery:
+
+```javascript
+// Example Express.js middleware
+app.use("/images", (req, res, next) => {
+  // Cache for 1 year
+  res.set("Cache-Control", "public, max-age=31536000, immutable");
+
+  // Enable compression
+  res.set("Vary", "Accept-Encoding");
+
+  next();
+});
+```
+
+### Auto-Scaling Service
+
+Example implementation for dynamic resizing:
+
+```javascript
+// Cloudflare Images example
+const imageUrl = `https://imagedelivery.net/account/image-id/w=512,h=512,f=auto`;
+
+// Next.js Image component
+import Image from "next/image";
+
+<Image
+  src="/icon-source.png"
+  width={512}
+  height={512}
+  quality={85}
+  format="auto"
+  alt="App icon"
+/>;
+```
+
+## Validation Tools
+
+### CLI Validation
+
+Use the Base MiniKit CLI to validate assets:
+
+```bash
+# Check all assets against specifications
+mini-kit doctor
+
+# Validate specific asset types
+mini-kit validate-assets --icons --heroes --screenshots
+
+# Get detailed size and format information
+mini-kit asset-info manifest.json
+```
+
+### Manual Validation Checklist
+
+Before submission, verify:
+
+- [ ] **File Sizes**: All assets under size limits
+- [ ] **Dimensions**: Exact pixel dimensions match requirements
+- [ ] **Formats**: Using supported formats (PNG/JPG)
+- [ ] **Compression**: Optimized for web delivery
+- [ ] **Quality**: Images are clear and professional
+- [ ] **Content**: Assets accurately represent your app
+
+### Automated Pipeline
+
+Example GitHub Action for asset validation:
+
+```yaml
+name: Validate Assets
+on: [push, pull_request]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+
+      - name: Install dependencies
+        run: npm install -g @base/minikit-cli
+
+      - name: Validate assets
+        run: mini-kit doctor --assets-only
+```
+
+## Common Issues & Solutions
+
+### File Size Too Large
+
+**Problem**: Assets exceed size limits
+**Solutions:**
+
+- Reduce image quality (JPEG quality 70-85%)
+- Crop unnecessary whitespace
+- Use appropriate color palette (fewer colors for PNG)
+- Consider format change (PNG to JPG for photos)
+
+### Wrong Dimensions
+
+**Problem**: Images don't match exact pixel requirements
+**Solutions:**
+
+- Use proper image editing tools (Photoshop, Figma, Sketch)
+- Set up artboards with exact dimensions
+- Use automated resizing in build pipeline
+- Validate dimensions before submission
+
+### Poor Quality After Compression
+
+**Problem**: Images look pixelated or blurry
+**Solutions:**
+
+- Start with higher quality source images
+- Use vector graphics when possible
+- Increase source resolution before downscaling
+- Use lossless compression tools first
+
+### Inconsistent Branding
+
+**Problem**: Assets don't match across different sizes
+**Solutions:**
+
+- Create a style guide for your app
+- Use consistent colors and typography
+- Test all assets at their final display sizes
+- Maintain the same visual hierarchy across assets
+
+## Resources
+
+- **[Performance Budgets](/base-app/performance/budgets)**: Overall performance requirements
+- **[Quality Checklist](/base-app/quality/checklist)**: Complete quality requirements
+- **[Validation Guide](/base-app/quality/validation)**: Testing and validation tools
+
+<Note>
+**Getting Help**
+
+If you're having trouble meeting asset requirements, join the weekly Base MiniApp office hours or ask in the Discord #miniapps channel.
+
+</Note>

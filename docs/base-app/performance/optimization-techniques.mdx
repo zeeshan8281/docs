@@ -1,0 +1,88 @@
+---
+title: "Optimization Techniques"
+description: "Practical recipes to meet performance budgets for Base MiniApps"
+---
+
+# Optimization Techniques
+
+Use these techniques to hit the Performance Budgets.
+
+## Code splitting and lazy loading
+
+```tsx
+const Page = lazy(() => import("./Page"));
+<Suspense fallback={<Skeleton />}>
+  {" "}
+  <Page />{" "}
+</Suspense>;
+```
+
+Tips:
+
+- Split routes and heavy components
+- Avoid hydrating full‑screen loaders; render meaningful content first
+
+## Preload critical resources
+
+```html
+<link
+  rel="preload"
+  href="/fonts/inter.woff2"
+  as="font"
+  type="font/woff2"
+  crossorigin
+/>
+<link
+  rel="preload"
+  href="/styles/critical.css"
+  as="style"
+  onload="this.onload=null;this.rel='stylesheet'"
+/>
+```
+
+## Responsive images
+
+```html
+<img
+  src="hero-800.jpg"
+  srcset="hero-400.jpg 400w, hero-800.jpg 800w, hero-1200.jpg 1200w"
+  sizes="(max-width:600px) 400px, (max-width:900px) 800px, 1200px"
+  loading="lazy"
+  alt="Hero"
+/>
+```
+
+## Use modern formats with fallbacks
+
+```html
+<picture>
+  <source srcset="img.avif" type="image/avif" />
+  <source srcset="img.webp" type="image/webp" />
+  <img src="img.jpg" alt="" />
+</picture>
+```
+
+## Server headers
+
+```js
+res.set("Cache-Control", "public, max-age=31536000, immutable");
+res.set("Vary", "Accept-Encoding");
+```
+
+## Network hints
+
+```html
+<link rel="preconnect" href="https://api.base.org" />
+<link rel="prefetch" href="/next-screen.js" />
+```
+
+## JS performance
+
+- Prefer `transform`/`opacity` animations
+- Memoize expensive computations
+- Avoid large polyfills; target only needed features
+
+## Monitoring and budgets
+
+- Integrate Web Vitals reporting
+- Set Lighthouse budgets and run in CI

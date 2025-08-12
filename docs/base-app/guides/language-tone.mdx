@@ -1,0 +1,428 @@
+---
+title: "Language & Tone Guidelines"
+description: "Copy standards and terminology guidelines for Base MiniApps"
+---
+
+# Language & Tone Guidelines
+
+Clear, user-friendly language is essential for creating accessible Base MiniApps. These guidelines help you write copy that focuses on user benefits rather than technical mechanisms.
+
+<Warning>
+**Quality Bar Requirement**
+
+Following these language guidelines is mandatory for featuring eligibility. Apps using crypto jargon or unclear copy will not pass the Quality Bar.
+
+</Warning>
+
+## Core Principles
+
+### 1. User Benefits Over Technical Mechanisms
+
+Focus on what users get, not how the technology works.
+
+<Tabs>
+  <Tab title="✅ Do">
+    - "Start earning rewards" - "Save your progress" - "Share with friends" -
+    "Get price alerts" - "Track your collectibles"
+  </Tab>
+  <Tab title="❌ Don't">
+    - "Connect wallet" - "Sign transaction" - "Mint NFT" - "Stake tokens" -
+    "Interact with smart contract"
+  </Tab>
+</Tabs>
+
+### 2. Plain English Over Jargon
+
+Use familiar words that everyone understands.
+
+<Tabs>
+  <Tab title="✅ Do">
+    - "Username" or "Profile name" - "Digital collectibles" - "Continue" or "Get
+    started" - "Share" - "Base app"
+  </Tab>
+  <Tab title="❌ Don't">
+    - "ENS domain" - "NFTs" - "Authenticate" - "Share to Farcaster" - "Farcaster
+    client"
+  </Tab>
+</Tabs>
+
+### 3. Outcome-Oriented CTAs
+
+Button text should describe what happens next.
+
+<Tabs>
+  <Tab title="✅ Do">
+    - "Start Quiz" - "View Portfolio" - "Join Game" - "Send Message" - "Buy
+    Collectible"
+  </Tab>
+  <Tab title="❌ Don't">
+    - "Submit" - "Execute" - "Process" - "Confirm" - "Continue" (without
+    context)
+  </Tab>
+</Tabs>
+
+## Terminology Guide
+
+### ✅ Preferred Terms
+
+| Context                | Use This                       | Not This                       |
+| ---------------------- | ------------------------------ | ------------------------------ |
+| **Authentication**     | Continue, Get started, Sign in | Connect wallet, Authenticate   |
+| **Platform Reference** | Base app                       | Farcaster, Farcaster client    |
+| **Digital Assets**     | Collectibles, Digital items    | NFTs, Tokens                   |
+| **User Identity**      | Username, Profile name         | ENS, Domain name               |
+| **Sharing**            | Share, Post                    | Share to Farcaster             |
+| **Transactions**       | Send, Buy, Sell                | Execute, Sign transaction      |
+| **Wallet Operations**  | Add funds, Check balance       | Top up, Query balance          |
+| **Smart Contracts**    | Mint, Create, Claim            | Deploy, Interact with contract |
+
+### Brand & Platform Terms
+
+#### ✅ Correct Usage
+
+- **"Base app"** - When referring to the platform users are in
+- **"Base network"** - When referring to the blockchain
+- **"Mini app"** or **"MiniApp"** - When referring to your application
+- **"Onchain"** - As one word when referring to blockchain activity
+
+#### ❌ Avoid These
+
+- **"Farcaster"** - Don't reference other platforms in user-facing UI
+- **"Web3"** - Too technical for general users
+- **"Dapp"** - Use "app" instead
+- **"On-chain"** - Use "onchain" as one word
+
+## Copy Style Guide
+
+### Capitalization
+
+Use **sentence case** for all UI text:
+
+```
+✅ Correct:
+- "Start your first quiz"
+- "View trading history"
+- "Share with friends"
+
+❌ Incorrect:
+- "Start Your First Quiz"
+- "View Trading History"
+- "Share With Friends"
+```
+
+### Button Text Guidelines
+
+#### Primary Actions
+
+Should be specific and outcome-focused:
+
+```tsx
+// ✅ Good button text
+<PrimaryButton>Start Daily Challenge</PrimaryButton>
+<PrimaryButton>Claim 50 USDC Reward</PrimaryButton>
+<PrimaryButton>Join Tournament</PrimaryButton>
+
+// ❌ Vague button text
+<PrimaryButton>Continue</PrimaryButton>
+<PrimaryButton>Submit</PrimaryButton>
+<PrimaryButton>OK</PrimaryButton>
+```
+
+#### Secondary Actions
+
+Should provide clear alternatives:
+
+```tsx
+// ✅ Clear alternatives
+<SecondaryButton>Browse leaderboard</SecondaryButton>
+<SecondaryButton>Try demo first</SecondaryButton>
+<SecondaryButton>Learn more</SecondaryButton>
+
+// ❌ Unclear alternatives
+<SecondaryButton>Later</SecondaryButton>
+<SecondaryButton>Skip</SecondaryButton>
+<SecondaryButton>Cancel</SecondaryButton>
+```
+
+### Microcopy Guidelines
+
+#### Loading States
+
+Focus on what's happening:
+
+```
+✅ Good loading copy:
+- "Loading your portfolio..."
+- "Preparing your quiz..."
+- "Connecting to Base network..."
+
+❌ Technical loading copy:
+- "Authenticating wallet..."
+- "Querying smart contract..."
+- "Signing transaction..."
+```
+
+#### Error Messages
+
+Explain what happened and what to do next:
+
+```
+✅ Helpful error messages:
+- "Connection lost. Check your internet and try again."
+- "Quiz already completed today. Come back tomorrow!"
+- "Insufficient funds. Add more USDC to continue."
+
+❌ Technical error messages:
+- "Transaction failed: insufficient gas"
+- "RPC endpoint timeout"
+- "Contract call reverted"
+```
+
+#### Success Messages
+
+Celebrate the outcome:
+
+```
+✅ Encouraging success messages:
+- "Quiz completed! You earned 10 USDC."
+- "Collectible purchased successfully!"
+- "Progress saved. See you tomorrow!"
+
+❌ Technical success messages:
+- "Transaction confirmed"
+- "Smart contract executed"
+- "Wallet connected"
+```
+
+## Content Templates
+
+### First-Run Experience
+
+Hook users with clear value in ≤ 80 characters:
+
+```tsx
+// Template for value proposition
+const ValueProp = () => (
+  <div>
+    <h1>[Action] [Outcome] [Timeframe]</h1>
+    <p>[Specific benefit in plain English]</p>
+  </div>
+);
+
+// ✅ Examples
+<ValueProp
+  title="Play daily trivia, win USDC"
+  subtitle="Test your knowledge and earn real rewards"
+/>
+
+<ValueProp
+  title="Track crypto in real-time"
+  subtitle="Monitor your portfolio and get instant alerts"
+/>
+```
+
+### Authentication Prompts
+
+Explain the benefit of signing in:
+
+```tsx
+const AuthPrompt = ({ reason, benefits }) => (
+  <Modal>
+    <h2>Continue with Base</h2>
+    <p>{reason}</p>
+    <ul>
+      {benefits.map((benefit) => (
+        <li>✓ {benefit}</li>
+      ))}
+    </ul>
+    <PrimaryButton>Get started</PrimaryButton>
+    <SecondaryButton>Try demo first</SecondaryButton>
+  </Modal>
+);
+
+// ✅ Example usage
+<AuthPrompt
+  reason="Save your progress and compete with friends"
+  benefits={[
+    "Track your quiz streak",
+    "Earn bonus rewards",
+    "Share achievements",
+  ]}
+/>;
+```
+
+### Empty States
+
+Guide users on what to do next:
+
+```tsx
+const EmptyState = ({ title, description, action }) => (
+  <div className="empty-state">
+    <Icon name="placeholder" />
+    <h3>{title}</h3>
+    <p>{description}</p>
+    <PrimaryButton>{action}</PrimaryButton>
+  </div>
+);
+
+// ✅ Helpful empty states
+<EmptyState
+  title="No collectibles yet"
+  description="Browse the marketplace to find unique digital art and items"
+  action="Explore marketplace"
+/>
+
+<EmptyState
+  title="Portfolio is empty"
+  description="Add funds to start tracking your crypto investments"
+  action="Add funds"
+/>
+```
+
+## Copy Review Checklist
+
+Before submitting your MiniApp, review all text against these criteria:
+
+### Content Standards
+
+- [ ] **Value Clear**: First screen explains what the app does in ≤ 80 chars
+- [ ] **No Jargon**: No crypto/technical terms in primary UI
+- [ ] **User Benefits**: Copy focuses on outcomes, not mechanisms
+- [ ] **Plain English**: Uses familiar words and concepts
+- [ ] **Sentence Case**: All UI text uses sentence case
+
+### Button & CTA Text
+
+- [ ] **Outcome-Oriented**: Buttons describe what happens next
+- [ ] **Specific Actions**: No generic "Submit" or "Continue" buttons
+- [ ] **Character Limits**: Button text ≤ 32 characters
+- [ ] **Clear Alternatives**: Secondary actions are meaningful
+
+### Error & State Messages
+
+- [ ] **Helpful Errors**: Errors explain what happened and next steps
+- [ ] **Encouraging Success**: Success messages celebrate outcomes
+- [ ] **Informative Loading**: Loading states describe what's happening
+- [ ] **Actionable Empty**: Empty states guide users to next actions
+
+### Brand & Terminology
+
+- [ ] **Consistent Platform**: Uses "Base app" not other platform names
+- [ ] **Approved Terms**: All terminology follows the preferred terms list
+- [ ] **User-Focused**: Language centers user benefits over technical features
+
+## Automated Copy Linting
+
+Use the Base MiniKit CLI to automatically check for banned terms:
+
+```bash
+# Scan all text in your app
+mini-kit lint-copy
+
+# Check specific files
+mini-kit lint-copy src/components/
+
+# Get suggestions for improvements
+mini-kit lint-copy --suggestions
+```
+
+### Banned Terms List
+
+The linter will flag these terms in user-facing text:
+
+```json
+{
+  "bannedTerms": [
+    "connect wallet",
+    "authenticate",
+    "farcaster",
+    "web3",
+    "dapp",
+    "smart contract",
+    "mint nft",
+    "stake tokens",
+    "sign transaction",
+    "ens domain"
+  ],
+  "suggestions": {
+    "connect wallet": "continue",
+    "authenticate": "sign in",
+    "farcaster": "Base app",
+    "mint nft": "create collectible",
+    "stake tokens": "earn rewards"
+  }
+}
+```
+
+## Common Copy Mistakes
+
+### ❌ Crypto Jargon in Primary UI
+
+```tsx
+// Bad: Technical language upfront
+function WelcomeScreen() {
+  return (
+    <div>
+      <h1>Connect Your Wallet</h1>
+      <p>Authenticate to interact with smart contracts</p>
+      <button>Connect Wallet</button>
+    </div>
+  );
+}
+```
+
+```tsx
+// Good: User-friendly language
+function WelcomeScreen() {
+  return (
+    <div>
+      <h1>Start Earning Rewards</h1>
+      <p>Play daily games and win real crypto prizes</p>
+      <button>Get started</button>
+    </div>
+  );
+}
+```
+
+### ❌ Unclear Value Proposition
+
+```tsx
+// Bad: Technical description
+<h1>Decentralized Finance Dashboard</h1>
+<p>Monitor your DeFi positions across multiple protocols</p>
+```
+
+```tsx
+// Good: Clear user benefit
+<h1>Track Your Crypto Investments</h1>
+<p>See all your holdings in one place with real-time updates</p>
+```
+
+### ❌ Generic Button Text
+
+```tsx
+// Bad: Unclear action
+<button>Submit</button>
+<button>Continue</button>
+<button>OK</button>
+```
+
+```tsx
+// Good: Specific outcomes
+<button>Join Tournament</button>
+<button>Save Progress</button>
+<button>Claim Reward</button>
+```
+
+## Resources
+
+- **[Authentication Guide](/base-app/guides/authentication)**: Copy for auth flows
+- **[Quality Checklist](/base-app/quality/checklist)**: Complete copy requirements
+- **[Error Handling](/base-app/guides/error-handling)**: Error message guidelines
+
+<Note>
+**String Localization**
+
+For apps targeting multiple languages, maintain these principles in all locales. Focus on clear, benefit-oriented language that translates well across cultures.
+
+</Note>

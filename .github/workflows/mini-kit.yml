@@ -1,0 +1,20 @@
+name: MiniKit Doctor
+on:
+  pull_request:
+    paths:
+      - "docs/**"
+      - "tools/minikit-cli/**"
+      - "minikit.config.json"
+
+jobs:
+  doctor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+      - name: Install CLI deps
+        run: npm ci --prefix tools/minikit-cli || npm install --prefix tools/minikit-cli
+      - name: Run doctor (Base App only)
+        run: node tools/minikit-cli/bin/mini-kit.mjs doctor docs/base-app

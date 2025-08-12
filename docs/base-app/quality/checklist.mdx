@@ -1,0 +1,149 @@
+---
+title: "Quality Bar Checklist"
+description: "Mandatory checklist for Base MiniApp quality standards before publishing and featuring eligibility"
+---
+
+# Quality Bar Checklist
+
+This checklist defines the mandatory quality standards that all Base MiniApps must meet before publishing and to be eligible for featuring. These standards ensure a consistent, high-quality user experience across the Base App ecosystem.
+
+<Warning>
+**Required for Featuring**
+
+All items in this checklist must be completed and verified before your mini app is eligible for featuring in the Base App carousel or categories.
+
+</Warning>
+
+## Pre-Launch Quality Requirements
+
+### ✅ Clarity & First Impression
+
+- [ ] **Value Proposition**: First screen states app value in ≤ 80 characters
+- [ ] **No Jargon**: First two screens contain no crypto jargon or technical terms
+- [ ] **Clear Purpose**: Users understand what the app does within 5 seconds of opening
+
+### ✅ Guest-First Experience
+
+- [ ] **Browse Without Auth**: Users can explore core functionality without signing in
+- [ ] **Deferred Authentication**: Auth is only required when user attempts an action that needs it
+- [ ] **Guest Path Available**: Provide "Continue as guest" or browse-only mode where possible
+- [ ] **Auth Reasoning**: When auth is required, clearly explain why with user-friendly language
+
+### ✅ Performance Standards
+
+- [ ] **Load Time**: First interaction available ≤ 1.5 seconds on mid-range devices
+- [ ] **Bundle Size**: Initial JavaScript ≤ 200 KB (gzipped)
+- [ ] **Image Budget**: First-screen images ≤ 300 KB total
+- [ ] **Core Web Vitals**:
+  - Time to Interactive (TTI) ≤ 200ms
+  - Cumulative Layout Shift (CLS) ≈ 0
+  - 60 fps on key transitions
+
+### ✅ Asset Specifications
+
+- [ ] **App Icon**: 512×512 PNG/JPG ≤ 60 KB (source 1024×1024 allowed)
+- [ ] **Splash Image**: 200×200 PNG/JPG ≤ 40 KB with solid background color
+- [ ] **Hero Image** (if featuring): 1200×628 PNG/JPG ≤ 250 KB
+- [ ] **Screenshots**: Up to 3 images, ≤ 500 KB each
+- [ ] **Open Graph**: 1200×630 PNG/JPG ≤ 250 KB
+
+### ✅ Layout & Accessibility
+
+- [ ] **Safe Areas**: Respect iOS safe areas using `env(safe-area-inset-*)`
+- [ ] **Touch Targets**: All interactive elements ≥ 44px minimum
+- [ ] **Text Legibility**: All text ≥ 15pt equivalent with high contrast
+- [ ] **Responsive Design**: Works on both iPhone and Android screen sizes
+- [ ] **Dark Mode**: Supports both light and dark Base App themes
+
+### ✅ UI States & Error Handling
+
+- [ ] **Loading States**: Skeleton screens for loading content (no blank screens)
+- [ ] **Empty States**: Clear guidance when no content is available
+- [ ] **Error Handling**: User-friendly error messages with retry options
+- [ ] **Offline Handling**: Graceful degradation when network is unavailable
+- [ ] **Success Feedback**: Clear confirmation when actions complete successfully
+
+### ✅ Content & Copy Standards
+
+- [ ] **Brand Consistency**: References "Base app" (not "Farcaster" or other platforms)
+- [ ] **No Crypto Jargon**: Avoid "connect wallet", "sign message", "seed phrase" in UI
+- [ ] **Outcome-Oriented CTAs**: Button text describes what happens ("Start Quiz" not "Connect")
+- [ ] **Sentence Case**: Use sentence case for all UI text (not Title Case)
+- [ ] **Plain English**: All microcopy uses clear, non-technical language
+
+### ✅ Error Taxonomy & Reliability
+
+- [ ] **Standardized Errors**: Use consistent error categories (network, auth, validation, etc.)
+- [ ] **User-Friendly Messages**: All error messages explain what happened and next steps
+- [ ] **Telemetry**: Track key metrics (auth success rate, load time, error rates)
+- [ ] **Retry Logic**: Implement exponential backoff for network failures
+
+### ✅ Manifest & Configuration
+
+- [ ] **Valid Schema**: Manifest passes validation with correct structure
+- [ ] **Testing Mode**: Set `"noindex": true` during development and testing
+- [ ] **Correct Categories**: App is in appropriate category with relevant tags (≤ 5 tags)
+- [ ] **Complete Metadata**: All required fields populated with accurate information
+
+### ✅ Privacy & Permissions
+
+- [ ] **Contextual Permissions**: Request permissions only when needed for specific actions
+- [ ] **Clear Reasoning**: Explain why permissions are needed in user-friendly terms
+- [ ] **Minimal Data**: Only collect data necessary for app functionality
+- [ ] **Transparent Usage**: Clear about how user data will be used
+
+## Validation Tools
+
+### Manual Testing Checklist
+
+1. **Device Testing**: Test on both iOS and Android devices
+2. **Network Conditions**: Test on 3G, WiFi, and offline scenarios
+3. **Theme Testing**: Verify appearance in light and dark modes
+4. **Edge Cases**: Test with empty data, long text, and error conditions
+
+### Automated Validation
+
+Use the Base MiniKit CLI tools for automated checks:
+
+```bash
+# Validate manifest and assets
+mini-kit doctor
+
+# Check copy for banned terms
+mini-kit lint-copy
+
+# Performance audit
+mini-kit lighthouse
+```
+
+### Pre-Submission Requirements
+
+Before submitting for featuring consideration:
+
+1. **Complete this checklist** with all items verified
+2. **Record a Loom walkthrough** (≤ 2 minutes) showing key user flows
+3. **Generate Lighthouse report** using mobile profile in webview
+4. **Test in Base App** using deep link or staging environment
+
+## Getting Help
+
+If you need assistance meeting any of these requirements:
+
+- **Office Hours**: Join weekly Base MiniApp Quality sessions
+- **Documentation**: Review supporting guides for each pillar
+- **Community**: Ask questions in the Base Discord #miniapps channel
+
+<Note>
+**Quality Lead Review**
+
+The Base MiniApp Quality Lead will review submissions against this checklist. Apps that don't meet these standards will receive specific feedback and guidance for improvement.
+
+</Note>
+
+## Next Steps
+
+Once your app passes this Quality Bar:
+
+1. Follow the [Submission Workflow](/base-app/quality/submission-workflow)
+2. Review [Getting Featured](/base-app/quality/getting-featured) criteria
+3. Monitor your app's performance metrics for sustained featuring eligibility

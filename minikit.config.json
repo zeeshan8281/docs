@@ -1,0 +1,41 @@
+{
+  "bannedTerms": [
+    "connect wallet",
+    "authenticate",
+    "farcaster",
+    "web3",
+    "dapp",
+    "smart contract",
+    "mint nft",
+    "stake tokens",
+    "sign transaction",
+    "ens domain"
+  ],
+  "suggestions": {
+    "connect wallet": "continue",
+    "authenticate": "sign in",
+    "farcaster": "Base app",
+    "smart contract": "onchain program",
+    "dapp": "app",
+    "web3": "onchain",
+    "mint nft": "create collectible",
+    "stake tokens": "earn rewards",
+    "sign transaction": "confirm",
+    "ens domain": "username"
+  },
+  "assets": {
+    "icon": { "width": 512, "height": 512, "maxBytes": 60000 },
+    "splash": { "width": 200, "height": 200, "maxBytes": 40000 },
+    "hero": { "width": 1200, "height": 628, "maxBytes": 250000 },
+    "og": { "width": 1200, "height": 630, "maxBytes": 250000 }
+  },
+  "copyLint": {
+    "exclude": [
+      "**/guides/**",
+      "**/design/**",
+      "**/miniapps/**",
+      "**/introduction/**",
+      "**/quality/checklist.mdx"
+    ]
+  }
+}

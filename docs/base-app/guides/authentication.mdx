@@ -1,0 +1,517 @@
+---
+title: "Authentication & Onboarding"
+description: "Guest-first authentication patterns and best practices for Base MiniApps"
+---
+
+# Authentication & Onboarding
+
+This guide establishes guest-first authentication patterns that prioritize user experience and reduce friction. The key principle: **never gate the first screen on sign-in** unless absolutely necessary.
+
+<Warning>
+**Quality Bar Requirement**
+
+Guest-first authentication is required for featuring eligibility. Apps that force unnecessary sign-in will not pass the Quality Bar.
+
+</Warning>
+
+## When to Require Authentication
+
+Use this decision tree to determine when authentication is needed:
+
+### ✅ No Auth Required
+
+- **Read-only content**: Browse, view, search
+- **Public data**: Leaderboards, trending content, general information
+- **Demos and previews**: Let users try core functionality
+- **Educational content**: Tutorials, guides, documentation
+
+### ⚠️ Optional Auth (Personalization)
+
+- **Saved preferences**: Theme, favorites, settings
+- **Progress tracking**: Game scores, reading progress
+- **Social features**: Following, likes, comments
+- **Recommendations**: Personalized content feeds
+
+### 🔒 Required Auth (Transactions)
+
+- **Wallet operations**: Send, receive, swap tokens
+- **Smart contract interactions**: Minting, staking, voting
+- **Paid features**: Premium content, subscriptions
+- **User-generated content**: Creating posts, uploading media
+
+## Implementation Patterns
+
+### Pattern 1: Browse-First Template
+
+For apps with significant read-only value:
+
+```tsx
+import { MiniKitProvider, useWallet } from "@base/minikit";
+
+export function App() {
+  return (
+    <MiniKitProvider>
+      <BrowseFirstApp />
+    </MiniKitProvider>
+  );
+}
+
+function BrowseFirstApp() {
+  const { isAuthenticated, authenticate } = useWallet();
+  const [view, setView] = useState("browse");
+
+  return (
+    <div className="app-container">
+      {view === "browse" && (
+        <BrowseMode
+          onPersonalize={() => setView("auth")}
+          onTransact={async () => {
+            if (!isAuthenticated) {
+              await authenticate({ reason: "Complete purchase" });
+            }
+            setView("transact");
+          }}
+        />
+      )}
+
+      {view === "auth" && (
+        <AuthFlow
+          onComplete={() => setView("personalized")}
+          onSkip={() => setView("browse")}
+        />
+      )}
+
+      {view === "personalized" && <PersonalizedMode />}
+      {view === "transact" && <TransactionMode />}
+    </div>
+  );
+}
+
+function BrowseMode({ onPersonalize, onTransact }) {
+  return (
+    <>
+      <Hero
+        title="Daily Crypto Quiz"
+        subtitle="Test your knowledge and win rewards"
+      />
+
+      <QuizPreview />
+
+      <div className="action-buttons">
+        <PrimaryButton onClick={onTransact}>
+          Start Playing (Win USDC)
+        </PrimaryButton>
+
+        <SecondaryButton onClick={onPersonalize}>
+          Personalize Experience
+        </SecondaryButton>
+
+        <TextLink href="#leaderboard">View Leaderboard</TextLink>
+      </div>
+    </>
+  );
+}
+```
+
+### Pattern 2: Action-Gated Authentication
+
+For transaction-focused apps with minimal browse value:
+
+```tsx
+function ActionGatedApp() {
+  const { isAuthenticated, authenticate } = useWallet();
+
+  const handlePrimaryAction = async () => {
+    // Show value first, auth second
+    if (!isAuthenticated) {
+      const confirmed = await showAuthPrompt({
+        title: "Continue with Base",
+        reason: "Track your portfolio and get personalized insights",
+        benefits: ["Save your preferences", "Get alerts", "Share with friends"],
+      });
+
+      if (confirmed) {
+        await authenticate({ reason: "Access your portfolio" });
+      } else {
+        // Provide limited functionality
+        setView("demo-mode");
+        return;
+      }
+    }
+
+    // Proceed with authenticated flow
+    setView("portfolio");
+  };
+
+  return (
+    <>
+      <ValueProposition
+        title="Track Your Crypto Portfolio"
+        benefits={[
+          "Real-time balance updates",
+          "Profit/loss analytics",
+          "Price alerts",
+        ]}
+      />
+
+      <DemoPortfolio />
+
+      <PrimaryButton onClick={handlePrimaryAction}>Get Started</PrimaryButton>
+
+      <SecondaryButton onClick={() => setView("demo-mode")}>
+        Try Demo First
+      </SecondaryButton>
+    </>
+  );
+}
+```
+
+### Pattern 3: Progressive Enhancement
+
+Gradually unlock features based on authentication:
+
+```tsx
+function ProgressiveApp() {
+  const { isAuthenticated, authenticate } = useWallet();
+  const [features, setFeatures] = useState(["browse"]);
+
+  const unlockFeature = async (feature, reason) => {
+    if (!isAuthenticated) {
+      await authenticate({ reason });
+    }
+    setFeatures((prev) => [...prev, feature]);
+  };
+
+  return (
+    <div>
+      {/* Always available */}
+      <PublicContent />
+
+      {/* Progressively unlocked */}
+      {features.includes("personalization") && <PersonalizedFeed />}
+      {features.includes("social") && <SocialFeatures />}
+      {features.includes("transactions") && <TransactionPanel />}
+
+      <FeatureUnlockPanel
+        onUnlock={unlockFeature}
+        availableFeatures={features}
+      />
+    </div>
+  );
+}
+
+function FeatureUnlockPanel({ onUnlock, availableFeatures }) {
+  const unlockableFeatures = [
+    {
+      id: "personalization",
+      title: "Save Preferences",
+      reason: "Remember your settings and favorites",
+      icon: "⚙️",
+    },
+    {
+      id: "social",
+      title: "Social Features",
+      reason: "Share and connect with other users",
+      icon: "👥",
+    },
+    {
+      id: "transactions",
+      title: "Send & Receive",
+      reason: "Make transactions and manage your wallet",
+      icon: "💰",
+    },
+  ];
+
+  return (
+    <div className="feature-unlock-grid">
+      {unlockableFeatures
+        .filter((f) => !availableFeatures.includes(f.id))
+        .map((feature) => (
+          <FeatureCard
+            key={feature.id}
+            {...feature}
+            onUnlock={() => onUnlock(feature.id, feature.reason)}
+          />
+        ))}
+    </div>
+  );
+}
+```
+
+## Authentication Flow UX
+
+### User-Friendly Prompts
+
+Always explain why authentication is needed:
+
+```tsx
+function AuthPrompt({ reason, benefits, onConfirm, onCancel }) {
+  return (
+    <Modal>
+      <div className="auth-prompt">
+        <Icon name="base-logo" size="large" />
+
+        <h2>Continue with Base</h2>
+        <p className="reason">{reason}</p>
+
+        {benefits && (
+          <ul className="benefits-list">
+            {benefits.map((benefit) => (
+              <li key={benefit}>
+                <Icon name="check" /> {benefit}
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <div className="actions">
+          <PrimaryButton onClick={onConfirm}>Continue</PrimaryButton>
+
+          <SecondaryButton onClick={onCancel}>Not Now</SecondaryButton>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+```
+
+### Error Handling
+
+Provide clear guidance when authentication fails:
+
+```tsx
+function AuthErrorHandler({ error, onRetry, onFallback }) {
+  const getErrorMessage = (error) => {
+    switch (error.code) {
+      case "USER_DECLINED":
+        return {
+          title: "Authentication Cancelled",
+          message: "You can still browse content or try again when ready.",
+          action: "Continue Browsing",
+        };
+      case "NETWORK_ERROR":
+        return {
+          title: "Connection Issue",
+          message: "Please check your internet connection and try again.",
+          action: "Retry",
+        };
+      case "DOMAIN_NOT_VERIFIED":
+        return {
+          title: "App Configuration Error",
+          message: "Please contact the app developer to resolve this issue.",
+          action: "Go Back",
+        };
+      default:
+        return {
+          title: "Authentication Failed",
+          message:
+            "Something went wrong. You can try again or continue browsing.",
+          action: "Try Again",
+        };
+    }
+  };
+
+  const errorInfo = getErrorMessage(error);
+
+  return (
+    <ErrorScreen>
+      <Icon name="warning" />
+      <h3>{errorInfo.title}</h3>
+      <p>{errorInfo.message}</p>
+
+      <div className="error-actions">
+        <PrimaryButton onClick={onRetry}>{errorInfo.action}</PrimaryButton>
+
+        <SecondaryButton onClick={onFallback}>
+          Continue as Guest
+        </SecondaryButton>
+      </div>
+    </ErrorScreen>
+  );
+}
+```
+
+## Best Practices
+
+### ✅ Do
+
+#### Clear Value Communication
+
+```tsx
+// Good: Clear benefit-focused messaging
+<AuthButton reason="Save your game progress and compete with friends">
+  Create Account
+</AuthButton>
+
+// Better: Specific outcome
+<AuthButton reason="Unlock premium features and save 20%">
+  Upgrade Account
+</AuthButton>
+```
+
+#### Graceful Degradation
+
+```tsx
+// Provide alternatives when auth fails
+const handleAuthRequired = async () => {
+  try {
+    await authenticate({ reason: "Save your progress" });
+    return "authenticated";
+  } catch (error) {
+    if (error.code === "USER_DECLINED") {
+      // Offer guest mode
+      return "guest";
+    }
+    throw error;
+  }
+};
+```
+
+#### Progressive Disclosure
+
+```tsx
+// Start simple, add complexity gradually
+const features = {
+  level1: ["browse", "search"],
+  level2: ["save", "personalize"], // Requires auth
+  level3: ["transact", "earn"], // Requires wallet
+};
+```
+
+### ❌ Don't
+
+#### Force Unnecessary Auth
+
+```tsx
+// Bad: Blocking browsing content
+function App() {
+  const { isAuthenticated } = useWallet();
+
+  if (!isAuthenticated) {
+    return <ForceAuthScreen />; // ❌ Never do this
+  }
+
+  return <AppContent />;
+}
+```
+
+#### Use Technical Language
+
+```tsx
+// Bad: Technical jargon
+<button>Connect Wallet to Continue</button>
+
+// Good: User-focused benefit
+<button>Start Earning Rewards</button>
+```
+
+#### Ignore Auth Failures
+
+```tsx
+// Bad: No fallback for auth failure
+const handleAction = async () => {
+  await authenticate(); // ❌ What if this fails?
+  doAction();
+};
+
+// Good: Handle all cases
+const handleAction = async () => {
+  try {
+    await authenticate({ reason: "Save your progress" });
+    doAction();
+  } catch (error) {
+    if (error.code === "USER_DECLINED") {
+      showGuestAlternative();
+    } else {
+      showErrorMessage(error);
+    }
+  }
+};
+```
+
+## Testing Authentication Flows
+
+### Test Cases
+
+Ensure your auth flow handles these scenarios:
+
+```javascript
+// Test guest experience
+describe("Guest Experience", () => {
+  it("allows browsing without authentication", () => {
+    // User should see content immediately
+  });
+
+  it("shows clear value before requesting auth", () => {
+    // Auth prompts should explain benefits
+  });
+
+  it("provides alternatives when auth is declined", () => {
+    // Guest mode or limited functionality
+  });
+});
+
+// Test error handling
+describe("Authentication Errors", () => {
+  it("handles user declining auth gracefully", () => {
+    // Should not block the user completely
+  });
+
+  it("retries authentication after network errors", () => {
+    // Should offer retry option
+  });
+
+  it("shows helpful messages for configuration errors", () => {
+    // Clear guidance for users and developers
+  });
+});
+```
+
+### Manual Testing Checklist
+
+- [ ] **First Screen**: No auth required to see value
+- [ ] **Auth Prompts**: Clear reasoning and benefits
+- [ ] **Error Handling**: Graceful failure modes
+- [ ] **Guest Mode**: Alternative functionality available
+- [ ] **Retry Logic**: Can recover from temporary failures
+- [ ] **User Decline**: Respects user choice not to authenticate
+
+## Common Patterns by App Type
+
+### Games & Entertainment
+
+- **Browse**: Leaderboards, game previews, rules
+- **Optional Auth**: Save progress, social features
+- **Required Auth**: Earn rewards, compete in tournaments
+
+### DeFi & Finance
+
+- **Browse**: Price data, market information, tutorials
+- **Optional Auth**: Personalized watchlists, price alerts
+- **Required Auth**: All transactions, portfolio management
+
+### Social & Content
+
+- **Browse**: Public posts, trending content, profiles
+- **Optional Auth**: Likes, follows, personalized feeds
+- **Required Auth**: Create posts, private messaging
+
+### E-commerce & Marketplaces
+
+- **Browse**: Product catalogs, reviews, search
+- **Optional Auth**: Wishlist, recommendations, reviews
+- **Required Auth**: Purchases, selling, order history
+
+## Resources
+
+- **[Quality Checklist](/base-app/quality/checklist)**: Authentication requirements for featuring
+- **[Language & Tone](/base-app/guides/language-tone)**: Copy guidelines for auth prompts
+- **[Error Handling](/base-app/guides/error-handling)**: Comprehensive error management
+- **[Templates](/base-app/guides/templates-starters)**: Pre-built authentication patterns
+
+<Note>
+**Getting Help**
+
+For authentication implementation questions, join the Base MiniApp office hours or consult the community Discord.
+
+</Note>
