@@ -1,0 +1,305 @@
+---
+title: 'Quickstart'
+description: 'Get started building your first Mini App in minutes'
+---
+
+Get up and running with your first Mini App in just a few minutes. This guide will walk you through creating a simple "Hello World" Mini App that demonstrates the basic concepts and integration patterns.
+
+## Prerequisites
+
+Before you begin, make sure you have:
+
+- Basic knowledge of HTML, CSS, and JavaScript
+- A code editor (VS Code, Sublime Text, etc.)
+- Node.js installed (version 16 or higher)
+- A Base App developer account
+
+## Step 1: Create Your Project
+
+Start by creating a new directory for your Mini App:
+
+```bash
+mkdir my-mini-app
+cd my-mini-app
+npm init -y
+```
+
+## Step 2: Set Up Basic Structure
+
+Create the following file structure:
+
+```
+my-mini-app/
+├── index.html
+├── styles.css
+├── app.js
+├── package.json
+└── README.md
+```
+
+### Create index.html
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Mini App</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to My Mini App!</h1>
+        <p>This is your first Mini App running in Base App.</p>
+        <button id="connectBtn" class="btn">Connect Wallet</button>
+        <div id="status" class="status"></div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
+```
+
+### Create styles.css
+
+```css
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    color: white;
+}
+
+.container {
+    max-width: 600px;
+    margin: 0 auto;
+    text-align: center;
+    padding: 40px 20px;
+}
+
+h1 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+p {
+    font-size: 1.2rem;
+    margin-bottom: 30px;
+    opacity: 0.9;
+}
+
+.btn {
+    background: #578BFA;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    font-size: 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin: 10px;
+}
+
+.btn:hover {
+    background: #4a7ce8;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.status {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+}
+```
+
+### Create app.js
+
+```javascript
+class MiniApp {
+    constructor() {
+        this.isConnected = false;
+        this.init();
+    }
+
+    init() {
+        this.connectBtn = document.getElementById('connectBtn');
+        this.statusDiv = document.getElementById('status');
+        
+        this.connectBtn.addEventListener('click', () => this.handleConnect());
+        this.updateStatus('Ready to connect');
+    }
+
+    async handleConnect() {
+        try {
+            this.updateStatus('Connecting...');
+            
+            // Simulate wallet connection
+            await this.simulateConnection();
+            
+            this.isConnected = true;
+            this.connectBtn.textContent = 'Connected!';
+            this.connectBtn.disabled = true;
+            this.updateStatus('Successfully connected to wallet! 🎉');
+            
+        } catch (error) {
+            this.updateStatus(`Connection failed: ${error.message}`);
+        }
+    }
+
+    async simulateConnection() {
+        // Simulate network delay
+        return new Promise((resolve) => {
+            setTimeout(resolve, 1500);
+        });
+    }
+
+    updateStatus(message) {
+        this.statusDiv.textContent = message;
+    }
+}
+
+// Initialize the app when the page loads
+document.addEventListener('DOMContentLoaded', () => {
+    new MiniApp();
+});
+```
+
+## Step 3: Test Locally
+
+Start a local development server:
+
+```bash
+# Using Python (if installed)
+python -m http.server 8000
+
+# Or using Node.js
+npx http-server -p 8000
+```
+
+Open your browser and navigate to `http://localhost:8000` to see your Mini App in action.
+
+## Step 4: Integrate with Base App
+
+To integrate your Mini App with Base App, you'll need to:
+
+### Add Base App Integration
+
+Update your `app.js` to include Base App integration:
+
+```javascript
+class MiniApp {
+    constructor() {
+        this.isConnected = false;
+        this.init();
+        this.setupBaseAppIntegration();
+    }
+
+    setupBaseAppIntegration() {
+        // Check if running in Base App
+        if (window.baseApp) {
+            this.baseApp = window.baseApp;
+            this.updateStatus('Running in Base App! 🚀');
+        } else {
+            this.updateStatus('Running in standalone mode');
+        }
+    }
+
+    async handleConnect() {
+        try {
+            this.updateStatus('Connecting...');
+            
+            if (this.baseApp) {
+                // Use Base App wallet connection
+                await this.connectToBaseApp();
+            } else {
+                // Fallback to simulation
+                await this.simulateConnection();
+            }
+            
+            this.isConnected = true;
+            this.connectBtn.textContent = 'Connected!';
+            this.connectBtn.disabled = true;
+            this.updateStatus('Successfully connected! 🎉');
+            
+        } catch (error) {
+            this.updateStatus(`Connection failed: ${error.message}`);
+        }
+    }
+
+    async connectToBaseApp() {
+        // Base App specific connection logic
+        if (this.baseApp.wallet) {
+            await this.baseApp.wallet.connect();
+        }
+    }
+
+    // ... rest of the class methods
+}
+```
+
+## Step 5: Deploy Your App
+
+### Option 1: Deploy to IPFS
+
+```bash
+# Install IPFS CLI tools
+npm install -g ipfs
+
+# Add your files to IPFS
+ipfs add -r .
+
+# Pin your files
+ipfs pin add <your-hash>
+```
+
+### Option 2: Deploy to Traditional Hosting
+
+- **Vercel**: Connect your GitHub repo and deploy automatically
+- **Netlify**: Drag and drop your build folder
+- **GitHub Pages**: Push to a GitHub repo and enable Pages
+
+## Step 6: Submit to Base App
+
+Once deployed, submit your Mini App for review:
+
+1. **Prepare Your Submission**:
+   - App description and screenshots
+   - Deployed URL
+   - Source code repository
+   - Testing instructions
+
+2. **Submit for Review**:
+   - Follow Base App's submission guidelines
+   - Ensure compliance with design standards
+   - Provide comprehensive documentation
+
+## Next Steps
+
+Congratulations! You've created your first Mini App. Here's what you can explore next:
+
+- **Authentication**: Learn about user authentication patterns
+- **Functions**: Discover available Mini App functions and APIs
+- **Design Guidelines**: Ensure your app follows Base App design standards
+- **Growth Playbook**: Strategies for growing your Mini App user base
+
+## Troubleshooting
+
+### Common Issues
+
+- **App not loading**: Check your deployment URL and ensure files are accessible
+- **Styling issues**: Verify CSS is loading correctly and check for conflicts
+- **Integration problems**: Ensure Base App integration code is properly implemented
+
+### Getting Help
+
+- Check the [Base App documentation](/base-app)
+- Join the [Base Discord community](https://discord.com/invite/buildonbase)
+- Review the [Design Guidelines](/mini-apps/design-guidelines) for best practices
+
+Ready to build something amazing? Start with this foundation and let your creativity guide you!

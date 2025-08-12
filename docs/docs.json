@@ -376,39 +376,34 @@
         }
       },
       {
-        "tab": "Base App",
+        "tab": "Mini Apps",
         "groups": [
           {
             "group": "Introduction",
-            "pages": [
-              "base-app/introduction/beta-faq",
-              "base-app/introduction/getting-started",
-              "base-app/introduction/why-mini-apps"
-            ]
+            "pages": ["mini-apps/why-mini-apps"]
           },
           {
-            "group": "Mini Apps",
-            "pages": [
-              "base-app/miniapps/overview",
-              "base-app/miniapps/quickstart",
-              "base-app/miniapps/existing-app-integration",
-              "base-app/miniapps/mini-apps",
-              "base-app/miniapps/search-and-discovery",
-              "base-app/miniapps/sharing-your-miniapp",
-              "base-app/miniapps/thinking-social",
-              "base-app/miniapps/debugging"
-            ]
+            "group": "Quickstart",
+            "pages": ["mini-apps/quickstart", "mini-apps/migrate-existing-app"]
           },
           {
-            "group": "Chat Agents",
+            "group": "Authentication",
+            "pages": ["mini-apps/authentication"]
+          },
+          {
+            "group": "Growth Playbook",
+            "pages": [ "mini-apps/build-viral-mini-apps", "mini-apps/sharing-your-miniapp","mini-apps/search-and-discovery"]
+          },
+          {
+            "group": "Design Guidelines",
             "pages": [
-              "base-app/agents/why-agents",
-              "base-app/agents/getting-started",
-              "base-app/agents/content-types",
-              "base-app/agents/transaction-trays",
-              "base-app/agents/best-practices",
-              "base-app/agents/getting-featured"
+              "mini-apps/best-practices",
+              "mini-apps/ui-kit",
+              "mini-apps/inspirations"
             ]
+          },        {
+            "group": "Troubleshooting",
+            "pages": ["mini-apps/common-issues-debugging"]
           }
         ]
       },

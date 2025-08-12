@@ -12,6 +12,77 @@
 
 .base_header_img {
   margin: auto;
+  max-width: 200px; /* Reduce logo width */
+  max-height: 60px; /* Reduce logo height */
+  width: auto;
+  height: auto;
+}
+
+/* Additional logo size controls */
+.logo {
+  max-width: 200px;
+  max-height: 60px;
+  width: auto;
+  height: auto;
+}
+
+/* Header logo specific styling */
+header img[src*="logo"],
+.header-logo,
+.navbar-logo {
+  max-width: 200px !important;
+  max-height: 60px !important;
+  width: auto !important;
+  height: auto !important;
+}
+
+/* Mintlify specific logo controls */
+.mt-header-logo,
+.mt-navbar-logo,
+[data-mt-logo] {
+  max-width: 200px !important;
+  max-height: 60px !important;
+  width: auto !important;
+  height: auto !important;
+}
+
+/* SVG logo specific controls */
+.logo svg,
+.logo-light svg,
+.logo-dark svg {
+  max-width: 200px !important;
+  max-height: 60px !important;
+  width: auto !important;
+  height: auto !important;
+}
+
+/* Responsive logo sizing */
+@media (max-width: 768px) {
+  .base_header_img,
+  .logo,
+  header img[src*="logo"],
+  .header-logo,
+  .navbar-logo,
+  .mt-header-logo,
+  .mt-navbar-logo,
+  [data-mt-logo] {
+    max-width: 150px !important;
+    max-height: 45px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .base_header_img,
+  .logo,
+  header img[src*="logo"],
+  .header-logo,
+  .navbar-logo,
+  .mt-header-logo,
+  .mt-navbar-logo,
+  [data-mt-logo] {
+    max-width: 120px !important;
+    max-height: 36px !important;
+  }
 }
 
 .homepage_wrapper {
