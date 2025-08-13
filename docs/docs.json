@@ -448,10 +448,10 @@
             ]
           },
           {
-            "group": "Quality & Publishing",
+            "group": "Get Featured",
             "pages": [
+              "mini-apps/quality-and-publishing/overview",
               "mini-apps/quality-and-publishing/quality-bar",
-              "mini-apps/quality-and-publishing/get-featured-full-guide",
               "mini-apps/quality-and-publishing/submission-guidelines"
             ]
           },
