@@ -260,6 +260,23 @@ const ownerAccount = await sdk.subAccount.addOwner({
 console.log('Owner added to Sub Account');
 ```
 
+## Auto Spend Permissions
+
+To help improve your app's transaction success rate, Base Account provides a feature called Auto Spend Permissions to allow the Sub Account to use funds from the user's Base Account to complete transactions and optionally grant a spend permission to skip approvals for future transactions, allowing for a more seamless transaction experience.
+
+### How it works
+
+When you create a Sub Account for a Base Account user, the Sub Account will always trigger a Base Account popup if the app has never been granted a spend permission. This popup will allow the user to review the transaction and confirm whether they would like to proceed. Base Account automatically detects missing native and ERC-20 tokens required to complete the transaction and transfers them to the user's Sub Account from their Base Account in order to complete the transaction.
+
+If the user decides to grant a spend permission for the required tokens, future requests will first be attempted in the background using spend permissions and if the request is unable to be fulfilled using existing balances and spend permissions it will prompt the user to proceed with the transaction using their Base Account.
+
+<Warning>
+Currently only a single spend permission can be granted at a time.
+</Warning>
+
+
+
+
 ## Complete Integration Example
 
 Here's a full React component that demonstrates Sub Account creation and usage:
