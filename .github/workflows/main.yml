@@ -1,0 +1,110 @@
+name: Update Docs
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-docs:
+    if: ${{ !startsWith(github.head_ref, 'docs/') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Cursor CLI
+        run: |
+          curl https://cursor.com/install -fsS | bash
+          echo "$HOME/.cursor/bin" >> $GITHUB_PATH
+
+      - name: Configure git
+        run: |
+          git config user.name "Cursor Agent"
+          git config user.email "cursoragent@cursor.com"
+
+      - name: Detect changed subdirectories
+        id: detect-changes
+        run: |
+          # Get list of changed files in docs/ directory
+          changed_files=$(git diff --name-only origin/${{ github.base_ref }}...HEAD -- docs/)
+          
+          # Extract unique subdirectories that have llms.txt files
+          changed_subdirs=""
+          for file in $changed_files; do
+            # Extract subdirectory (e.g., docs/base-account/file.mdx -> base-account)
+            subdir=$(echo "$file" | sed -n 's|^docs/\([^/]*\)/.*|\1|p')
+            if [ -n "$subdir" ] && [ -f "docs/$subdir/llms.txt" ] && [ -f "docs/$subdir/llms-full.txt" ]; then
+              # Add to list if not already present
+              if [[ ! "$changed_subdirs" =~ (^|[[:space:]])"$subdir"($|[[:space:]]) ]]; then
+                changed_subdirs="$changed_subdirs $subdir"
+              fi
+            fi
+          done
+          
+          # Clean up whitespace
+          changed_subdirs=$(echo "$changed_subdirs" | xargs)
+          
+          echo "changed_subdirs=$changed_subdirs" >> $GITHUB_OUTPUT
+          echo "Found changed subdirectories: $changed_subdirs"
+
+      - name: Update docs for changed subdirectories
+        if: steps.detect-changes.outputs.changed_subdirs != ''
+        env:
+          MODEL: gpt-4o
+          CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH_PREFIX: docs
+          CHANGED_SUBDIRS: ${{ steps.detect-changes.outputs.changed_subdirs }}
+        run: |
+          cursor-agent -p "You are operating in a GitHub Actions runner to update documentation summary files.
+
+          The GitHub CLI is available as \`gh\` and authenticated via \`GH_TOKEN\`. Git is available. You have write access to repository contents and can comment on pull requests, but you must not create or edit PRs.
+
+          # Context:
+          - Repo: ${{ github.repository }}
+          - Owner: ${{ github.repository_owner }}
+          - PR Number: ${{ github.event.pull_request.number }}
+          - Base Ref: ${{ github.base_ref }}
+          - Head Ref: ${{ github.head_ref }}
+          - Docs Branch Prefix: ${{ env.BRANCH_PREFIX }}
+          - Changed Subdirectories: $CHANGED_SUBDIRS
+
+          # Goal:
+          Update the llms.txt and llms-full.txt files in the changed subdirectories based on the content changes in those subdirectories.
+
+          # Requirements:
+          1) For each subdirectory in CHANGED_SUBDIRS, analyze what changed in that subdirectory since the last commit.
+          2) Update ONLY the llms.txt and llms-full.txt files in those specific subdirectories (e.g., docs/base-account/llms.txt, docs/base-account/llms-full.txt).
+          3) DO NOT update the root-level llms.txt or llms-full.txt files.
+          4) The llms.txt should be a concise summary/index of the documentation in that subdirectory.
+          5) The llms-full.txt should be a comprehensive guide with code examples and detailed explanations.
+          6) Maintain the existing format and style of these files.
+          7) Create or update a persistent docs branch for this PR using the Docs Branch Prefix.
+          8) Push changes to origin.
+          9) Post or update a single PR comment explaining what was updated with an inline compare link.
+
+          # File Structure Context:
+          Each subdirectory (base-account, base-app, base-chain, cookbook, get-started, learn, mini-apps, onchainkit) contains:
+          - Multiple .mdx documentation files
+          - An llms.txt file (concise summary/index)
+          - An llms-full.txt file (comprehensive guide with code examples)
+
+          # Instructions:
+          1) Use \`gh pr diff\` to see what changed in the PR for the specific subdirectories.
+          2) Read the current llms.txt and llms-full.txt files in each changed subdirectory.
+          3) Scan the .mdx files in each changed subdirectory to understand the content.
+          4) Update the llms.txt and llms-full.txt files to reflect any new content, changes, or reorganization.
+          5) Ensure the updates are accurate and maintain the existing style.
+          6) Only make changes if documentation updates are actually needed.
+
+          # Deliverables when updates occur:
+          - Updated llms.txt and llms-full.txt files in the relevant subdirectories
+          - Pushed commits to the persistent docs branch
+          - A PR comment with inline compare link for easy PR creation
+          " --force --model "$MODEL" --output-format=text
