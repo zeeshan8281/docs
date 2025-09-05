@@ -1,4 +1,5 @@
 ---
+sidebarTitle: Convert any Mini App
 title: Converting Any Web App to a Mini App
 description: Learn how to transform any existing web application into a Mini App for Base App and Farcaster clients. This framework-agnostic guide covers the four essential components needed for integration.
 ---
@@ -25,9 +26,6 @@ The manifest performs two critical functions:
 - **App Identity**: Tells clients your app's name, icon, and display properties
 - **Domain Verification**: The `accountAssociation` proves you control both the domain and linked Farcaster account, enabling features like notifications
 
-<Note>
-The `.well-known` directory is a standardized location defined in [RFC 5785](https://tools.ietf.org/rfc/rfc5785.txt) where applications can reliably discover metadata and configuration files.
-</Note>
 
 ### Manifest Requirements
 
@@ -108,7 +106,7 @@ Embed metadata transforms your Mini App URLs into rich, interactive previews whe
 When users share your app's URL:
 - **Rich Previews**: Displays your app's image and description
 - **Direct Launch**: Provides a button to open your Mini App immediately
-- **Increased Engagement**: Visual previews drive higher click-through rates
+
 
 ### Implementation by Framework
 
