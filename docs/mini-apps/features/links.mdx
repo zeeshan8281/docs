@@ -51,30 +51,6 @@ const shareContent = () => {
 // Incorrect: Composer intent URLs
 // window.open('https://farcaster.com/~/compose?text=...')
 ```
-Using MiniKit
-
-```tsx Share with App Embed
-import { useComposeCast } from '@coinbase/onchainkit/minikit';
-
-export default function ShareAppButton() {
-  const { composeCast } = useComposeCast();
-
-  const handleShareApp = () => {
-    composeCast({
-      text: 'Check out this amazing Mini App!',
-      embeds: [window.location.href]
-    });
-  };
-
-  return (
-    <button onClick={handleShareApp}>
-      Share Mini App
-    </button>
-  );
-}
-```
-[Click here for more MiniKit examples](/mini-apps/technical-reference/minikit/hooks/useComposeCast)
-
 
 ## Best Practices
 
