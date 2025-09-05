@@ -419,6 +419,7 @@
               {
                 "group": "Existing Apps",
                 "pages": [
+                  "mini-apps/quickstart/existing-apps/converting-any-app",
                   "mini-apps/quickstart/existing-apps/install",
                   "mini-apps/quickstart/existing-apps/add-minikit",
                   "mini-apps/quickstart/existing-apps/configure-environment",

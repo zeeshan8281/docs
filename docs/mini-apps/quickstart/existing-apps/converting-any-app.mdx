@@ -1,0 +1,266 @@
+---
+title: Converting Any Web App to a Mini App
+description: Learn how to transform any existing web application into a Mini App for Base App and Farcaster clients. This framework-agnostic guide covers the four essential components needed for integration.
+---
+
+> **What you'll learn**  
+> By the end of this guide, you'll be able to:
+> - Set up the required manifest file to register your app with Mini App clients
+> - Implement embed metadata for rich social sharing and discovery
+> - Integrate context APIs to access user data and onchain functionality
+> - Configure ready state handling for optimal loading experience
+
+
+<Tip>
+**Using React?** If you're building a React application and want to use MiniKit with additional onchain components, follow the [MiniKit integration guide for existing apps](https://docs.base.org/mini-apps/quickstart/existing-apps/install) instead of this guide.
+</Tip>
+
+## Set Up Your Application Manifest
+
+The application manifest serves as your Mini App's identity card. Host clients use this file to identify your app, display its metadata, and verify domain ownership.
+
+### Why You Need a Manifest
+
+The manifest performs two critical functions:
+- **App Identity**: Tells clients your app's name, icon, and display properties
+- **Domain Verification**: The `accountAssociation` proves you control both the domain and linked Farcaster account, enabling features like notifications
+
+<Note>
+The `.well-known` directory is a standardized location defined in [RFC 5785](https://tools.ietf.org/rfc/rfc5785.txt) where applications can reliably discover metadata and configuration files.
+</Note>
+
+### Manifest Requirements
+
+Your manifest file must meet these requirements:
+
+<Warning>
+- Must be accessible at `https://yourdomain.com/.well-known/farcaster.json`
+- Must return valid JSON with `Content-Type: application/json`  
+- Must be publicly accessible (no authentication required)
+- Must include both `accountAssociation` and `frame`/`miniapp` objects
+</Warning>
+
+### Complete Manifest Structure
+
+```json
+{
+  "accountAssociation": {
+    "header": "eyJmaWQiOjkxNTIsInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHgwMmVmNzkwRGQ3OTkzQTM1ZkQ4NDdDMDUzRURkQUU5NDBEMDU1NTk2In0",
+    "payload": "eyJkb21haW4iOiJhcHAuZXhhbXBsZS5jb20ifQ",
+    "signature": "MHgxMGQwZGU4ZGYwZDUwZTdmMGIxN2YxMTU2NDI1MjRmZTY0MTUyZGU4ZGU1MWU0MThiYjU4ZjVmZmQxYjRjNDBiNGVlZTRhNDcwNmVmNjhlMzQ0ZGQ5MDBkYmQyMmNlMmVlZGY5ZGQ0N2JlNWRmNzMwYzUxNjE4OWVjZDJjY2Y0MDFj"
+  },
+  "baseBuilder": {
+    "allowedAddresses": ["0x..."]
+  },
+  "frame": {
+    "version": "1",
+    "name": "Example Mini App",
+    "homeUrl": "https://ex.co",
+    "iconUrl": "https://ex.co/i.png",
+    "splashImageUrl": "https://ex.co/l.png",
+    "splashBackgroundColor": "#000000",
+    "webhookUrl": "https://ex.co/api/webhook",
+    "subtitle": "Fast, fun, social",
+    "description": "A fast, fun way to challenge friends in real time.",
+    "screenshotUrls": [
+      "https://ex.co/s1.png",
+      "https://ex.co/s2.png",
+      "https://ex.co/s3.png"
+    ],
+    "primaryCategory": "social",
+    "tags": ["example", "miniapp", "baseapp"],
+    "heroImageUrl": "https://ex.co/og.png",
+    "tagline": "Play instantly",
+    "ogTitle": "Example Mini App",
+    "ogDescription": "Challenge friends in real time.",
+    "ogImageUrl": "https://ex.co/og.png",
+    "noindex": true
+  }
+}
+```
+
+### Framework-Specific Implementation
+
+Choose the approach that matches your technology stack:
+
+- **Next.js:** Create API route at `app/.well-known/farcaster.json/route.ts`
+- **Vite/Static sites:** Place file in `public/.well-known/farcaster.json`
+- **Express/Node.js:** Add route handler for `/.well-known/farcaster.json`
+- **Any framework:** Ensure the URL resolves and returns the JSON
+
+### Generate Your Account Association
+
+1. Visit the [Mini App Manifest Tool](https://farcaster.xyz/~/developers/new)
+2. Enter your domain exactly as you'll host the manifest
+3. Generate your `accountAssociation` object
+4. Copy the generated values into your manifest
+
+### Verify Your Setup
+
+Test your manifest accessibility by visiting `https://yourdomain.com/.well-known/farcaster.json` in your browser. You should see your JSON manifest returned with the correct content type.
+
+## Add Embed Metadata for Social Sharing
+
+Embed metadata transforms your Mini App URLs into rich, interactive previews when shared in social feeds. Instead of plain text links, users will see preview images and launch buttons.
+
+### Why Embed Metadata Matters
+
+When users share your app's URL:
+- **Rich Previews**: Displays your app's image and description
+- **Direct Launch**: Provides a button to open your Mini App immediately
+- **Increased Engagement**: Visual previews drive higher click-through rates
+
+### Implementation by Framework
+
+**Next.js**
+```typescript
+// app/layout.tsx or page.tsx
+export const metadata = {
+  other: {
+    'fc:frame': JSON.stringify({
+      version: "next",
+      imageUrl: "https://yourapp.com/preview.png",
+      button: {
+        title: "Launch App",
+        action: {
+          type: "launch_frame",
+          url: "https://yourapp.com"
+        }
+      }
+    })
+  }
+}
+```
+
+**HTML-based Applications**
+```html
+<!-- Add to <head> section -->
+<meta name="fc:frame" content='{"version":"next","imageUrl":"https://yourapp.com/preview.png","button":{"title":"Launch App","action":{"type":"launch_frame","url":"https://yourapp.com"}}}' />
+```
+
+<Note>
+Both `fc:frame` and `fc:miniapp` meta tags are accepted by clients.
+</Note>
+
+## Integrate Context and User Data
+
+The [Mini App SDK](https://miniapps.farcaster.xyz/docs/getting-started) provides access to user's social context and enables app-specific functionality like notifications and cast composition.
+
+### Why Context Integration Is Essential
+
+Context integration allows your app to:
+- **Access User Data**: Get the user's Farcaster profile, FID, and connected wallet
+- **Send Notifications**: Notify users about important events or updates
+- **Create Social Actions**: Enable users to compose casts directly from your app
+
+
+### Choose Your Integration Path
+
+**For React Applications**
+Follow the [MiniKit integration guide](https://docs.base.org/mini-apps/quickstart/existing-apps/install) for React-specific hooks and onchain components.
+
+**For All Other Frameworks**
+Follow the [Farcaster Mini Apps Getting Started Guide](https://miniapps.farcaster.xyz/docs/getting-started) to integrate the core SDK.
+
+<Tip>
+MiniKit is built on top of the Mini App SDK and provides additional React hooks and onchain components for easier integration in React applications.
+</Tip>
+
+## Configure Ready State Handling
+
+Mini Apps display a splash screen while loading. You must call the `ready()` function to signal when your app has finished loading.
+
+### Why Ready State Matters
+
+- **User Experience**: Replaces the loading splash screen with your app interface
+- **Performance Perception**: Shows users when your app is fully functional
+- **Required Behavior**: Host clients expect this signal to know when to hide loading states
+
+### Implementation Examples
+
+Choose the guide that matches your setup:
+
+- **Mini App SDK**: [Ready Action Documentation](https://miniapps.farcaster.xyz/docs/sdk/actions/ready)
+- **MiniKit**: [Frame Readiness Documentation](https://docs.base.org/mini-apps/technical-reference/minikit/hooks/useMiniKit#frame-readiness)
+
+## Understanding Notification Requirements
+
+Notifications enhance user engagement but require server-side infrastructure. If your app is frontend-only, you have several options to add notification capabilities.
+
+### Why Notifications Need a Backend
+
+Notifications require server-side handling because:
+- **Security**: Notification tokens must be stored securely in a database
+- **Webhooks**: Tokens are delivered to your server when users add your Mini App
+- **CORS Restrictions**: Notifications must be sent from your server, not the client
+
+<Warning>
+Frontend-only applications cannot implement notifications without additional server infrastructure.
+</Warning>
+
+### Options for Frontend-Only Projects
+
+Choose the approach that best fits your setup:
+
+1. **Add Server Routes**: Extend your app with Express.js/Node.js API endpoints
+2. **Use Serverless Functions**: Deploy to Vercel/Netlify with API function support
+3. **Managed Services**: Use [Neynar](https://docs.neynar.com/docs/send-notifications-to-mini-app-users) for managed notification infrastructure
+4. **Skip Notifications**: Build your Mini App without notification features
+
+### Webhook Configuration
+
+If implementing notifications, add the webhook URL to your manifest:
+
+```json
+{
+  "frame": {
+    "webhookUrl": "https://yourapp.com/api/webhook"
+  }
+}
+```
+
+## Implementation Checklist
+
+Follow these steps to convert your web app into a Mini App:
+
+### Manifest Setup
+- [ ] Generate account association using [Manifest Tool](https://farcaster.xyz/~/developers/new)
+- [ ] Create `/.well-known/farcaster.json` with both `accountAssociation` and `frame` objects
+- [ ] Verify manifest accessibility at `https://yourdomain.com/.well-known/farcaster.json`
+- [ ] Test manifest returns valid JSON with correct content type
+
+### Embed Metadata
+- [ ] Add `fc:frame` or `fc:miniapp` meta tag to your pages
+- [ ] Include preview image and launch button configuration
+- [ ] Test social sharing preview in supported clients
+
+### SDK Integration
+- [ ] Install appropriate SDK: [Mini App SDK](https://miniapps.farcaster.xyz/docs/getting-started) or [MiniKit](https://docs.base.org/mini-apps/quickstart/existing-apps/install)
+- [ ] Access user context and social data
+- [ ] Implement ready state handling when app finishes loading
+
+### Testing and Validation
+- [ ] Test your Mini App at [Warpcast Debug Tool](https://warpcast.com/~/developers/mini-apps/debug)
+- [ ] Verify all features work correctly in Base App
+- [ ] Test embed previews when sharing URLs
+
+## Additional Resources
+
+### Development Tools
+- [Mini App Manifest Tool](https://farcaster.xyz/~/developers/new) - Generate account associations
+- [Warpcast Debug Tool](https://warpcast.com/~/developers/mini-apps/debug) - Test your Mini App
+
+### SDK Documentation
+- [Farcaster Mini Apps Getting Started](https://miniapps.farcaster.xyz/docs/getting-started) - Core SDK integration
+- [MiniKit for Existing Apps](https://docs.base.org/mini-apps/quickstart/existing-apps/install) - React-specific implementation
+
+### Technical Specifications
+- [Farcaster Mini Apps Spec](https://docs.farcaster.xyz/developers/frames/v2/spec) - Complete technical specification
+- [Well-Known URIs](https://en.wikipedia.org/wiki/Well-known_URI) - Background on .well-known directory
+
+### Advanced Features
+- [Managed Notifications (Neynar)](https://docs.neynar.com/docs/send-notifications-to-mini-app-users) - Notification infrastructure
+
+### Related Guides
+- [Manifest Configuration](/mini-apps/features/manifest) - Detailed manifest setup
+- [Embed Implementation](/mini-apps/features/embeds-and-previews) - Social sharing optimization
