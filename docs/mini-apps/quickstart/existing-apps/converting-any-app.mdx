@@ -222,8 +222,8 @@ If implementing notifications, add the webhook URL to your manifest:
 Follow these steps to convert your web app into a Mini App:
 
 ### Manifest Setup
-- [ ] Generate account association using [Manifest Tool](https://farcaster.xyz/~/developers/new)
-- [ ] Create `/.well-known/farcaster.json` with both `accountAssociation` and `frame` objects
+- [ ] Generate account association 
+- [ ] Create `/.well-known/farcaster.json` with both `accountAssociation` and `frame` or `miniapp`objects
 - [ ] Verify manifest accessibility at `https://yourdomain.com/.well-known/farcaster.json`
 - [ ] Test manifest returns valid JSON with correct content type
 
@@ -233,32 +233,8 @@ Follow these steps to convert your web app into a Mini App:
 - [ ] Test social sharing preview in supported clients
 
 ### SDK Integration
-- [ ] Install appropriate SDK: [Mini App SDK](https://miniapps.farcaster.xyz/docs/getting-started) or [MiniKit](https://docs.base.org/mini-apps/quickstart/existing-apps/install)
+- [ ] Install appropriate SDK: Mini App SDK or MiniKit
 - [ ] Access user context and social data
 - [ ] Implement ready state handling when app finishes loading
 
-### Testing and Validation
-- [ ] Test your Mini App at [Warpcast Debug Tool](https://warpcast.com/~/developers/mini-apps/debug)
-- [ ] Verify all features work correctly in Base App
-- [ ] Test embed previews when sharing URLs
 
-## Additional Resources
-
-### Development Tools
-- [Mini App Manifest Tool](https://farcaster.xyz/~/developers/new) - Generate account associations
-- [Warpcast Debug Tool](https://warpcast.com/~/developers/mini-apps/debug) - Test your Mini App
-
-### SDK Documentation
-- [Farcaster Mini Apps Getting Started](https://miniapps.farcaster.xyz/docs/getting-started) - Core SDK integration
-- [MiniKit for Existing Apps](https://docs.base.org/mini-apps/quickstart/existing-apps/install) - React-specific implementation
-
-### Technical Specifications
-- [Farcaster Mini Apps Spec](https://docs.farcaster.xyz/developers/frames/v2/spec) - Complete technical specification
-- [Well-Known URIs](https://en.wikipedia.org/wiki/Well-known_URI) - Background on .well-known directory
-
-### Advanced Features
-- [Managed Notifications (Neynar)](https://docs.neynar.com/docs/send-notifications-to-mini-app-users) - Notification infrastructure
-
-### Related Guides
-- [Manifest Configuration](/mini-apps/features/manifest) - Detailed manifest setup
-- [Embed Implementation](/mini-apps/features/embeds-and-previews) - Social sharing optimization
