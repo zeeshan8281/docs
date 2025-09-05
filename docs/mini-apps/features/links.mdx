@@ -22,7 +22,7 @@ Avoid using direct HTML links (`<a href="">`, `<Link href="">`) or static URLs i
 Use `sdk.actions.openUrl()` to safely open external websites in the client's in-app browser:
 
 ```typescript App.tsx
-import { sdk } from '@@farcaster/miniapp-sdk';
+import { sdk } from '@farcaster/miniapp-sdk';
 
 // Correct: Use SDK action
 const openExternalSite = () => {
@@ -51,6 +51,30 @@ const shareContent = () => {
 // Incorrect: Composer intent URLs
 // window.open('https://farcaster.com/~/compose?text=...')
 ```
+Using MiniKit
+
+```tsx Share with App Embed
+import { useComposeCast } from '@coinbase/onchainkit/minikit';
+
+export default function ShareAppButton() {
+  const { composeCast } = useComposeCast();
+
+  const handleShareApp = () => {
+    composeCast({
+      text: 'Check out this amazing Mini App!',
+      embeds: [window.location.href]
+    });
+  };
+
+  return (
+    <button onClick={handleShareApp}>
+      Share Mini App
+    </button>
+  );
+}
+```
+[Click here for more MiniKit examples](/mini-apps/technical-reference/minikit/hooks/useComposeCast)
+
 
 ## Best Practices
 
@@ -67,7 +91,7 @@ Before implementing any navigation or linking functionality:
 When using features that may not be supported in all clients:
 
 ```javascript App.tsx
-import { sdk } from '@@farcaster/miniapp-sdk';
+import { sdk } from '@farcaster/miniapp-sdk';
 
 const handleExternalLink = (url) => {
   try {
@@ -79,6 +103,7 @@ const handleExternalLink = (url) => {
 };
 ```
 
+
 ### 3. Avoid Client-Specific URLs
 
 Don't hardcode URLs specific to particular clients (like Warpcast URLs). Instead, use SDK actions that work across all supported clients.
@@ -88,7 +113,7 @@ Don't hardcode URLs specific to particular clients (like Warpcast URLs). Instead
 ### Navigation Buttons
 
 ```javascript NavigationComponent.tsx
-import { sdk } from '@@farcaster/miniapp-sdk';
+import { sdk } from '@farcaster/miniapp-sdk';
 
 const NavigationComponent = () => {
   const handleExternalLink = () => {
@@ -118,7 +143,7 @@ const NavigationComponent = () => {
 ### Conditional Navigation
 
 ```javascript ConditionalNavigation.tsx
-import { sdk } from '@@farcaster/miniapp-sdk';
+import { sdk } from '@farcaster/miniapp-sdk';
 
 const ConditionalNavigation = () => {
   const context = sdk.context;
