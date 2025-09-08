@@ -16,6 +16,34 @@ description: Learn how to transform any existing web application into a Mini App
 **Using React?** If you're building a React application and want to use MiniKit with additional onchain components, follow the [MiniKit integration guide for existing apps](https://docs.base.org/mini-apps/quickstart/existing-apps/install) instead of this guide.
 </Tip>
 
+## Core Concept: What Makes an App a Mini App
+
+Mini Apps are web applications that run inside Farcaster and Base clients instead of traditional browsers. This changes how your app is discovered, launched, and interacts with users.
+
+### Key Differences from Regular Web Apps
+
+**Hosted Environment**: Your app runs in an iframe or WebView within client apps like Warpcast
+
+**Social Context**: Access to user's Farcaster profile, social connections, and onchain wallet
+
+**Discovery**: Found through social feeds and app stores, not search engines
+
+**Launch Flow**: Users tap a button in their social feed to instantly open your app
+
+### The Four Essential Components
+
+Your existing web app needs these additions to function as a Mini App:
+
+**Manifest** - Registers your app identity with client hosts
+
+**Embed Metadata** - Creates rich previews when shared in social feeds
+
+**SDK Integration** - Accesses user context and social functionality
+
+**Ready State** - Signals when your app has finished loading
+
+These components work together: the manifest tells clients about your app, embeds help users discover it, the SDK provides social functionality, and ready state ensures smooth loading.
+
 ## Set Up Your Application Manifest
 
 The application manifest serves as your Mini App's identity card. Host clients use this file to identify your app, display its metadata, and verify domain ownership.
