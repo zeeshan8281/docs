@@ -1,0 +1,49 @@
+---
+sidebarTitle: Convert any Mini App
+title: Converting Any Web App to a Mini App
+description: Learn how to transform any existing web application into a Mini App for Base App and Farcaster clients. This framework-agnostic guide covers the four essential components needed for integration.
+---
+
+> **What you'll learn**  
+> By the end of this guide, you'll be able to:
+> - Set up the required manifest file to register your app with Mini App clients
+> - Implement embed metadata for rich social sharing and discovery
+> - Integrate context APIs to access user data and onchain functionality
+> - Configure ready state handling for optimal loading experience
+
+
+<Tip>
+**Using React?** If you're building a React application and want to use MiniKit with additional onchain components, follow the [MiniKit integration guide for existing apps](https://docs.base.org/mini-apps/quickstart/existing-apps/install) instead of this guide.
+</Tip>
+
+## Core Concept: What Makes an App a Mini App
+
+Mini Apps provide many benefits, including access to a users social graph, native distribution channels (e.g Base app or any Farcaster client) and ability to be launched without approval . [Learn more about why mini apps](https://docs.base.org/mini-apps/overview).
+
+### Key Differences from Regular Web Apps
+
+**Hosted Environment**: Your app runs in a view similar to an iframe or WebView.
+
+**Social Context**: Access to user's profile, social connections, and onchain wallet
+
+**Discovery**: Found through social feeds and app stores, not search engines
+
+**Launch Flow**: Users tap a button in their social feed to instantly open your app
+
+### The Four Essential Components
+
+Your existing web app needs these additions to function as a Mini App:
+
+**Manifest** - Registers your app identity with client hosts
+
+**Embed Metadata** - Creates rich previews when shared in social feeds
+
+**SDK Integration** - Accesses user context and social functionality
+
+**Ready State** - Signals when your app has finished loading
+
+These components work together: the manifest tells clients about your app, embeds help users discover it, the SDK provides social functionality, and ready state ensures smooth loading.
+
+## Set Up Your Application Manifest
+
+The application manifest serves as your Mini App's identity card. Host clients use this file to identify your app, display its metadata, and verify domain ownership.

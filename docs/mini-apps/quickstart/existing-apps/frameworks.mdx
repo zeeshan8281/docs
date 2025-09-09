@@ -1,0 +1,8 @@
+### Framework-Specific Implementation
+
+Choose the approach that matches your technology stack:
+
+- **Next.js:** Create API route at `app/.well-known/farcaster.json/route.ts`
+- **Vite/Static sites:** Place file in `public/.well-known/farcaster.json`
+- **Express/Node.js:** Add route handler for `/.well-known/farcaster.json`
+- **Any framework:** Ensure the URL resolves and returns the JSON
