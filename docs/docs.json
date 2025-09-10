@@ -423,6 +423,7 @@
                   "mini-apps/quickstart/existing-apps/manifest-setup",
                   "mini-apps/quickstart/existing-apps/embed-metadata",
                   "mini-apps/quickstart/existing-apps/sdk-integration",
+                    "mini-apps/quickstart/existing-apps/test-and-deploy",
                   {
                     "group": "Install Guides",
                     "pages": [
@@ -438,14 +439,7 @@
                         ]
                       }
                     ]
-                  },
-                  "mini-apps/quickstart/existing-apps/install",
-                  "mini-apps/quickstart/existing-apps/add-minikit",
-                  "mini-apps/quickstart/existing-apps/configure-environment",
-                  "mini-apps/quickstart/existing-apps/manifest-cli",
-                  "mini-apps/quickstart/existing-apps/create-manifest",
-                  "mini-apps/quickstart/existing-apps/add-frame-metadata",
-                  "mini-apps/quickstart/existing-apps/test-and-deploy"
+                  }
                 ]
               },
               "mini-apps/quickstart/launch-checklist"
