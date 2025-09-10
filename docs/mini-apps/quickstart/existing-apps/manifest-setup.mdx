@@ -1,0 +1,106 @@
+---
+sidebarTitle: Manifest Setup
+title: Set Up Your Application Manifest
+description: Configure your Mini App's identity and domain verification with the required manifest file.
+---
+
+The application manifest serves as your Mini App's identity card. Host clients use this file to identify your app, display its metadata, and verify domain ownership.
+
+## Why You Need a Manifest
+
+The manifest performs two critical functions:
+- **App Identity**: Tells clients your app's name, icon, and display properties
+- **Domain Verification**: The `accountAssociation` proves you control both the domain and linked Farcaster account, enabling features like notifications
+
+
+## Manifest Requirements
+
+Your manifest file must meet these requirements:
+
+<Warning>
+- Must be accessible at `https://yourdomain.com/.well-known/farcaster.json`
+- Must return valid JSON with `Content-Type: application/json`  
+- Must be publicly accessible (no authentication required)
+- Must include both `accountAssociation` and `frame`/`miniapp` objects
+</Warning>
+
+## Complete Manifest Structure
+
+```json
+{
+  "accountAssociation": {
+    "header": "eyJmaWQiOjkxNTIsInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHgwMmVmNzkwRGQ3OTkzQTM1ZkQ4NDdDMDUzRURkQUU5NDBEMDU1NTk2In0",
+    "payload": "eyJkb21haW4iOiJhcHAuZXhhbXBsZS5jb20ifQ",
+    "signature": "MHgxMGQwZGU4ZGYwZDUwZTdmMGIxN2YxMTU2NDI1MjRmZTY0MTUyZGU4ZGU1MWU0MThiYjU4ZjVmZmQxYjRjNDBiNGVlZTRhNDcwNmVmNjhlMzQ0ZGQ5MDBkYmQyMmNlMmVlZGY5ZGQ0N2JlNWRmNzMwYzUxNjE4OWVjZDJjY2Y0MDFj"
+  },
+  "baseBuilder": {
+    "allowedAddresses": ["0x..."]
+  },
+  "frame": {
+    "version": "1",
+    "name": "Example Mini App",
+    "homeUrl": "https://ex.co",
+    "iconUrl": "https://ex.co/i.png",
+    "splashImageUrl": "https://ex.co/l.png",
+    "splashBackgroundColor": "#000000",
+    "webhookUrl": "https://ex.co/api/webhook",
+    "subtitle": "Fast, fun, social",
+    "description": "A fast, fun way to challenge friends in real time.",
+    "screenshotUrls": [
+      "https://ex.co/s1.png",
+      "https://ex.co/s2.png",
+      "https://ex.co/s3.png"
+    ],
+    "primaryCategory": "social",
+    "tags": ["example", "miniapp", "baseapp"],
+    "heroImageUrl": "https://ex.co/og.png",
+    "tagline": "Play instantly",
+    "ogTitle": "Example Mini App",
+    "ogDescription": "Challenge friends in real time.",
+    "ogImageUrl": "https://ex.co/og.png",
+    "noindex": true
+  }
+}
+```
+
+## Framework-Specific Implementation
+
+Choose the approach that matches your technology stack:
+
+- **Next.js:** Create API route at `app/.well-known/farcaster.json/route.ts`
+- **Vite/Static sites:** Place file in `public/.well-known/farcaster.json`
+- **Express/Node.js:** Add route handler for `/.well-known/farcaster.json`
+- **Any framework:** Ensure the URL resolves and returns the JSON
+
+## Generate Your Account Association
+
+1. Visit the [Mini App Manifest Tool](https://farcaster.xyz/~/developers/new)
+2. Enter your your root url for your app, where your manifest will be hosted.
+3. Generate your `accountAssociation` object.
+4. Copy the generated values into your manifest.
+
+## Verify Your Setup
+
+Test your manifest accessibility by visiting `https://yourdomain.com/.well-known/farcaster.json` in your browser. You should see your JSON manifest returned with the correct content type.
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Overview" icon="info" href="/mini-apps/quickstart/existing-apps/overview">
+    Back to the conversion overview
+  </Card>
+  <Card title="Add Embed Metadata" icon="share" href="/mini-apps/quickstart/existing-apps/embed-metadata">
+    Enable rich social sharing and discovery
+  </Card>
+</CardGroup>
+
+<CardGroup cols={2}>
+  <Card title="SDK Integration" icon="code" href="/mini-apps/quickstart/existing-apps/sdk-integration">
+    Access user context and onchain functionality
+  </Card>
+  <Card title="Test & Deploy" icon="rocket" href="/mini-apps/quickstart/existing-apps/test-and-deploy">
+    Validate your setup and launch your Mini App
+  </Card>
+</CardGroup>

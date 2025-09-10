@@ -1,0 +1,68 @@
+---
+sidebarTitle: Embed Metadata
+title: Add Embed Metadata for Social Sharing
+description: Enable rich social sharing and discovery by configuring embed metadata for your Mini App.
+---
+
+Embed metadata transforms your Mini App URLs into rich, interactive previews when shared in social feeds. Instead of plain text links, users will see preview images and launch buttons.
+
+## Why Embed Metadata Matters
+
+When users share your app's URL:
+- **Rich Previews**: Displays your app's image and description
+- **Direct Launch**: Provides a button to open your Mini App immediately
+
+
+## Implementation by Framework
+
+**Next.js**
+```typescript
+// app/layout.tsx or page.tsx
+export const metadata = {
+  other: {
+    'fc:frame': JSON.stringify({
+      version: "next",
+      imageUrl: "https://yourapp.com/preview.png",
+      button: {
+        title: "Launch App",
+        action: {
+          type: "launch_frame",
+          url: "https://yourapp.com"
+        }
+      }
+    })
+  }
+}
+```
+
+**HTML-based Applications**
+```html
+<!-- Add to <head> section -->
+<meta name="fc:frame" content='{"version":"next","imageUrl":"https://yourapp.com/preview.png","button":{"title":"Launch App","action":{"type":"launch_frame","url":"https://yourapp.com"}}}' />
+```
+
+<Note>
+Both `fc:frame` and `fc:miniapp` meta tags are accepted by clients.
+</Note>
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Overview" icon="info" href="/mini-apps/quickstart/existing-apps/overview">
+    Back to the conversion overview
+  </Card>
+  <Card title="Set Up Manifest" icon="file-code" href="/mini-apps/quickstart/existing-apps/manifest-setup">
+    Configure your app's identity and domain verification
+  </Card>
+</CardGroup>
+
+<CardGroup cols={2}>
+  <Card title="SDK Integration" icon="code" href="/mini-apps/quickstart/existing-apps/sdk-integration">
+    Access user context and onchain functionality
+  </Card>
+  <Card title="Test & Deploy" icon="rocket" href="/mini-apps/quickstart/existing-apps/test-and-deploy">
+    Validate your setup and launch your Mini App
+  </Card>
+</CardGroup>

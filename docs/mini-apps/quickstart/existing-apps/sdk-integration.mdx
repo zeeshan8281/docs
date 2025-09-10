@@ -1,0 +1,124 @@
+---
+sidebarTitle: SDK Integration
+title: SDK Integration & Configuration
+description: Integrate context APIs, configure ready state handling, and set up notifications for your Mini App.
+---
+
+## Integrate Context and User Data
+
+The [Mini App SDK](https://miniapps.farcaster.xyz/docs/getting-started) provides access to user's social context and enables app-specific functionality like notifications and cast composition.
+
+### Why Context Integration Is Essential
+
+Context integration allows your app to:
+- **Access User Data**: Get the user's Farcaster profile, FID, and connected wallet
+- **Send Notifications**: Notify users about important events or updates
+- **Create Social Actions**: Enable users to compose casts directly from your app
+
+
+### Choose Your Integration Path
+
+**For React Applications**
+Follow the [MiniKit integration guide](https://docs.base.org/mini-apps/quickstart/existing-apps/install) for React-specific hooks and onchain components.
+
+**For All Other Frameworks**
+Follow the [Farcaster Mini Apps Getting Started Guide](https://miniapps.farcaster.xyz/docs/getting-started) to integrate the core SDK.
+
+<Tip>
+MiniKit is built on top of the Mini App SDK and provides additional React hooks and onchain components for easier integration in React applications.
+</Tip>
+
+## Configure Ready State Handling
+
+Mini Apps display a splash screen while loading. You must call the `ready()` function to signal when your app has finished loading.
+
+### Why Ready State Matters
+
+- **User Experience**: Replaces the loading splash screen with your app interface
+- **Performance Perception**: Shows users when your app is fully functional
+- **Required Behavior**: Host clients expect this signal to know when to hide loading states
+
+### Implementation Examples
+
+Choose the guide that matches your setup:
+
+- **Mini App SDK**: [Ready Action Documentation](https://miniapps.farcaster.xyz/docs/sdk/actions/ready)
+- **MiniKit**: [Frame Readiness Documentation](https://docs.base.org/mini-apps/technical-reference/minikit/hooks/useMiniKit#frame-readiness)
+
+## Understanding Notification Requirements
+
+Notifications enhance user engagement but require server-side infrastructure. If your app is frontend-only, you have several options to add notification capabilities.
+
+### Why Notifications Need a Backend
+
+Notifications require server-side handling because:
+- **Security**: Notification tokens must be stored securely in a database
+- **Webhooks**: Tokens are delivered to your server when users add your Mini App
+- **CORS Restrictions**: Notifications must be sent from your server, not the client
+
+<Warning>
+Frontend-only applications cannot implement notifications without additional server infrastructure.
+</Warning>
+
+### Options for Frontend-Only Projects
+
+Choose the approach that best fits your setup:
+
+1. **Add Server Routes**: Extend your app with Express.js/Node.js API endpoints
+2. **Use Serverless Functions**: Deploy to Vercel/Netlify with API function support
+3. **Managed Services**: Use [Neynar](https://docs.neynar.com/docs/send-notifications-to-mini-app-users) for managed notification infrastructure
+4. **Skip Notifications**: Build your Mini App without notification features
+
+### Webhook Configuration
+
+If implementing notifications, add the webhook URL to your manifest:
+
+```json
+{
+  "frame": {
+    "webhookUrl": "https://yourapp.com/api/webhook"
+  }
+}
+```
+
+## Implementation Checklist
+
+Follow these steps to convert your web app into a Mini App:
+
+### Manifest Setup
+- [ ] Generate account association 
+- [ ] Create `/.well-known/farcaster.json` with both `accountAssociation` and `frame` or `miniapp`objects
+- [ ] Verify manifest accessibility at `https://yourdomain.com/.well-known/farcaster.json`
+- [ ] Test manifest returns valid JSON with correct content type
+
+### Embed Metadata
+- [ ] Add `fc:frame` or `fc:miniapp` meta tag to your pages
+- [ ] Include preview image and launch button configuration
+- [ ] Test social sharing preview in supported clients
+
+### SDK Integration
+- [ ] Install appropriate SDK: Mini App SDK or MiniKit
+- [ ] Access user context and social data
+- [ ] Implement ready state handling when app finishes loading
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Overview" icon="info" href="/mini-apps/quickstart/existing-apps/overview">
+    Back to the conversion overview
+  </Card>
+  <Card title="Set Up Manifest" icon="file-code" href="/mini-apps/quickstart/existing-apps/manifest-setup">
+    Configure your app's identity and domain verification
+  </Card>
+</CardGroup>
+
+<CardGroup cols={2}>
+  <Card title="Add Embed Metadata" icon="share" href="/mini-apps/quickstart/existing-apps/embed-metadata">
+    Enable rich social sharing and discovery
+  </Card>
+  <Card title="Test & Deploy" icon="rocket" href="/mini-apps/quickstart/existing-apps/test-and-deploy">
+    Validate your setup and launch your Mini App
+  </Card>
+</CardGroup>

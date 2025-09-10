@@ -419,7 +419,10 @@
               {
                 "group": "Existing Apps",
                 "pages": [
-                  "mini-apps/quickstart/existing-apps/converting-any-app",
+                  "mini-apps/quickstart/existing-apps/overview",
+                  "mini-apps/quickstart/existing-apps/manifest-setup",
+                  "mini-apps/quickstart/existing-apps/embed-metadata",
+                  "mini-apps/quickstart/existing-apps/sdk-integration",
                   "mini-apps/quickstart/existing-apps/install",
                   "mini-apps/quickstart/existing-apps/add-minikit",
                   "mini-apps/quickstart/existing-apps/configure-environment",
