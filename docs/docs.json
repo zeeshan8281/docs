@@ -19,6 +19,9 @@
       "languages": ["javascript"]
     }
   },
+  "banner":{
+    "content": "[On September 10th, Base Chain will begin enforcing a per-transaction gas cap. Read more here](/base-chain/network-information/block-building#per-transaction-gas-maximum)."
+  },
   "navigation": {
     "tabs": [
       {
@@ -190,6 +193,7 @@
             "pages": [
               "base-account/guides/authenticate-users",
               "base-account/guides/accept-payments",
+              "base-account/guides/accept-recurring-payments",
               "base-account/improve-ux/batch-transactions",
               "base-account/improve-ux/sponsor-gas/paymasters",
               "base-account/improve-ux/sub-accounts",
@@ -228,8 +232,22 @@
                 "group": "Account SDK",
                 "pages": [
                   "base-account/reference/core/createBaseAccount",
-                  "base-account/reference/base-pay/pay",
-                  "base-account/reference/base-pay/getPaymentStatus",
+                  {
+                    "group": "Base Pay",
+                    "pages": [
+                      "base-account/reference/base-pay/pay",
+                      "base-account/reference/base-pay/getPaymentStatus"
+                    ]
+                  },
+                  {
+                    "group": "Subscriptions",
+                    "pages": [
+                      "base-account/reference/base-pay/subscriptions-overview",
+                      "base-account/reference/base-pay/subscribe",
+                      "base-account/reference/base-pay/getStatus",
+                      "base-account/reference/base-pay/prepareCharge"
+                    ]
+                  },
                   "base-account/reference/core/getProvider",
                   "base-account/reference/spend-permission-utilities/requestSpendPermission",
                   "base-account/reference/spend-permission-utilities/prepareSpendCallData",
@@ -256,6 +274,7 @@
                       "base-account/reference/core/provider-rpc-methods/wallet_addSubAccount",
                       "base-account/reference/core/provider-rpc-methods/wallet_getSubAccounts",
                       "base-account/reference/core/provider-rpc-methods/coinbase_fetchPermissions",
+                      "base-account/reference/core/provider-rpc-methods/coinbase_fetchPermission",
                       "base-account/reference/core/provider-rpc-methods/eth_accounts",
                       "base-account/reference/core/provider-rpc-methods/eth_requestAccounts",
                       "base-account/reference/core/provider-rpc-methods/eth_chainId",
@@ -524,7 +543,8 @@
           {
             "group": "Resources",
             "pages": [
-              "mini-apps/resources/resources"
+              "mini-apps/resources/templates",
+              "mini-apps/llms-full.txt"
             ]
           }
         ]
@@ -803,6 +823,7 @@
             "pages": [
               "cookbook/onboard-any-user",
               "cookbook/accept-crypto-payments",
+              "cookbook/spend-permissions-ai-agent",
               "cookbook/launch-ai-agents",
               "cookbook/launch-tokens",
               "cookbook/deploy-a-chain",
@@ -1271,13 +1292,12 @@
       {
         "label": "Support",
         "href": "https://discord.com/invite/buildonbase"
+      },
+      {
+        "label": "Base.org",
+        "href": "https://base.org"
       }
-    ],
-    "primary": {
-      "type": "button",
-      "label": "Base.org",
-      "href": "https://base.org"
-    }
+    ]
   },
   "footer": {
     "socials": {
