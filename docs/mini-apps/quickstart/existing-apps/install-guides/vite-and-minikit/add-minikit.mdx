@@ -1,0 +1,71 @@
+---
+title: Add MiniKit
+description: Wrap your app with MiniKitProvider and initialize the Mini App
+---
+
+Add the provider and initialize MiniKit in your Vite app.
+
+## Setup the Provider
+
+Create a provider component and wrap your app with the `MiniKitProvider`.
+
+```tsx src/providers/MiniKitProvider.tsx
+'use client';
+
+import type { ReactNode } from 'react';
+import { MiniKitProvider } from '@coinbase/onchainkit/minikit';
+import { base } from 'viem/chains'; // or your preferred chain config
+
+export function Provider({ children }: { children: ReactNode }) {
+  return (
+    <MiniKitProvider
+      apiKey={import.meta.env.VITE_PUBLIC_ONCHAINKIT_API_KEY}
+      chain={base}
+    >
+      {children}
+    </MiniKitProvider>
+  );
+}
+```
+
+Wrap your main app component:
+
+```tsx src/main.tsx
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import App from './App.tsx'
+import { Provider } from './providers/MiniKitProvider'
+import './index.css'
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <Provider>
+      <App />
+    </Provider>
+  </React.StrictMode>,
+)
+```
+
+## Initialize MiniKit
+
+Use `useMiniKit()` to call `setFrameReady()` when your app is ready.
+
+```tsx src/App.tsx
+'use client';
+import { useEffect } from 'react';
+import { useMiniKit } from '@coinbase/onchainkit/minikit';
+
+export default function App() {
+  const { setFrameReady, isFrameReady } = useMiniKit();
+
+  useEffect(() => {
+    if (!isFrameReady) setFrameReady();
+  }, [isFrameReady, setFrameReady]);
+
+  return <div>Your app content goes here</div>;
+}
+```
+
+<Tip>
+The provider configures the MiniKit context and provides access to Farcaster features when available.
+</Tip>

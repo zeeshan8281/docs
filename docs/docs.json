@@ -424,6 +424,7 @@
                   "mini-apps/quickstart/existing-apps/embed-metadata",
                   "mini-apps/quickstart/existing-apps/sdk-integration",
                     "mini-apps/quickstart/existing-apps/test-and-deploy",
+                     "mini-apps/quickstart/launch-checklist",
                   {
                     "group": "Install Guides",
                     "pages": [
@@ -437,12 +438,22 @@
                           "mini-apps/quickstart/existing-apps/install-guides/nextjs-and-minikit/create-manifest",
                           "mini-apps/quickstart/existing-apps/install-guides/nextjs-and-minikit/add-frame-metadata"
                         ]
+                      },
+                      {
+                        "group": "Vite and MiniKit",
+                        "pages": [
+                          "mini-apps/quickstart/existing-apps/install-guides/vite-and-minikit/install",
+                          "mini-apps/quickstart/existing-apps/install-guides/vite-and-minikit/add-minikit",
+                          "mini-apps/quickstart/existing-apps/install-guides/vite-and-minikit/configure-environment",
+                          "mini-apps/quickstart/existing-apps/install-guides/vite-and-minikit/manifest-cli",
+                          "mini-apps/quickstart/existing-apps/install-guides/vite-and-minikit/create-manifest",
+                          "mini-apps/quickstart/existing-apps/install-guides/vite-and-minikit/add-frame-metadata"
+                        ]
                       }
                     ]
                   }
                 ]
-              },
-              "mini-apps/quickstart/launch-checklist"
+              }
             ]
           },
           {

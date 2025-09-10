@@ -1,0 +1,91 @@
+---
+title: Add Frame Metadata
+description: Add Farcaster embed metadata and finalize your Vite Mini App
+---
+
+Add metadata so your Mini App can be embedded in Farcaster and complete your setup.
+
+## Add Farcaster Embed Metadata
+
+Since Vite doesn't have built-in metadata handling like Next.js, you'll need to add the frame metadata to your `index.html`:
+
+```html public/index.html
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Your Mini App</title>
+    
+    <!-- Farcaster Frame metadata -->
+    <meta name="fc:frame" content="vNext" />
+    <meta name="fc:frame:image" content="https://yourapp.com/preview.png" />
+    <meta name="fc:frame:button:1" content="Launch App" />
+    <meta name="fc:frame:button:1:action" content="launch_frame" />
+    <meta name="fc:frame:button:1:target" content="https://yourapp.com" />
+    
+    <!-- Open Graph metadata -->
+    <meta property="og:title" content="Your Mini App" />
+    <meta property="og:description" content="Description of your app" />
+    <meta property="og:image" content="https://yourapp.com/og.png" />
+    <meta property="og:url" content="https://yourapp.com" />
+    <meta property="og:type" content="website" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+```
+
+<Tip>
+Update the URLs and content to match your deployed app.
+</Tip>
+
+## Dynamic Embed Images
+
+Dynamic embed images (e.g. using Vercel OG) require a backend.  
+Vite projects are frontend-only and cannot generate images at runtime.
+
+Options:
+- Use a framework with SSR (e.g. Next.js, SvelteKit) to render OG tags on the server
+- Use Vercel Serverless Functions to generate OG tags dynamically  
+- Use [Vercel Satori](https://github.com/vercel/satori) to render HTML/SVG to images for social embeds
+
+## Notifications
+
+Notifications require server-side handling.
+
+- **Security**: Tokens must be stored securely in a database
+- **Webhooks**: Tokens are delivered to your server when users add your Mini App
+- **CORS**: Notifications must be sent from your server, not the client
+
+Frontend-only applications cannot implement notifications without backend infrastructure.
+
+## Run Your Mini App
+
+Start your development server:
+
+```bash
+npm run dev
+```
+
+Your Mini App will be available at `http://localhost:5173`.
+
+For production deployment, build your app:
+
+```bash
+npm run build
+```
+
+<Check>
+Test your Mini App in the Base App to ensure all features work correctly.
+</Check>
+
+## Next Steps
+
+- Deploy your app to a hosting service (Vercel, Netlify, etc.)
+- Update your environment variables in production
+- Test the manifest endpoint at `https://yourdomain.com/.well-known/farcaster.json`
+- Submit your Mini App for review in Base App

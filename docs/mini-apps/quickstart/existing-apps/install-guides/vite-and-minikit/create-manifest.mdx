@@ -1,0 +1,112 @@
+---
+title: Create Manifest
+description: Expose the required /.well-known/farcaster.json endpoint for Vite apps
+---
+
+Your Mini App's Manifest proves ownership of your app and powers search, discovery, and rich embeds in the Base App. 
+
+Since Vite projects are frontend-only applications, you have several options for serving the manifest:
+
+## Option 1: Static Manifest File
+
+Create a static `farcaster.json` file in your `public/.well-known/` directory:
+
+```json public/.well-known/farcaster.json
+{
+  "accountAssociation": {
+    "header": "your_farcaster_header_here",
+    "payload": "your_farcaster_payload_here", 
+    "signature": "your_farcaster_signature_here"
+  },
+  "frame": {
+    "version": "1",
+    "name": "YourAppName",
+    "subtitle": "Short subtitle",
+    "description": "Describe what your app does",
+    "screenshotUrls": [],
+    "iconUrl": "https://your-app.vercel.app/icon.png",
+    "splashImageUrl": "https://your-app.vercel.app/splash.png",
+    "splashBackgroundColor": "#000000",
+    "homeUrl": "https://your-app.vercel.app",
+    "webhookUrl": "https://your-app.vercel.app/api/webhook",
+    "primaryCategory": "social",
+    "tags": [],
+    "heroImageUrl": "https://your-app.vercel.app/og.png",
+    "tagline": "Play instantly",
+    "ogTitle": "Your App",
+    "ogDescription": "Fast, fun, social",
+    "ogImageUrl": "https://your-app.vercel.app/og.png",
+    "noindex": true
+  }
+}
+```
+
+<Check>
+Visit `https://yourdomain.com/.well-known/farcaster.json` to verify JSON output.
+</Check>
+
+## Option 2: Use Serverless Functions
+
+For dynamic manifests, you can use serverless functions:
+
+### Vercel Functions
+Create `api/well-known/farcaster.json.js`:
+
+```js api/.well-known/farcaster.json.js
+function withValidProperties(properties) {
+  return Object.fromEntries(
+    Object.entries(properties).filter(([_, value]) => (Array.isArray(value) ? value.length > 0 : !!value))
+  );
+}
+
+export default function handler(req, res) {
+  const URL = process.env.VITE_PUBLIC_URL;
+  
+  res.status(200).json({
+    accountAssociation: {
+      header: process.env.FARCASTER_HEADER,
+      payload: process.env.FARCASTER_PAYLOAD,
+      signature: process.env.FARCASTER_SIGNATURE,
+    },
+    frame: withValidProperties({
+      version: '1',
+      name: process.env.VITE_PUBLIC_ONCHAINKIT_PROJECT_NAME,
+      subtitle: process.env.VITE_PUBLIC_APP_SUBTITLE,
+      description: process.env.VITE_PUBLIC_APP_DESCRIPTION,
+      screenshotUrls: [],
+      iconUrl: process.env.VITE_PUBLIC_APP_ICON,
+      splashImageUrl: process.env.VITE_PUBLIC_APP_SPLASH_IMAGE,
+      splashBackgroundColor: process.env.VITE_PUBLIC_SPLASH_BACKGROUND_COLOR,
+      homeUrl: URL,
+      webhookUrl: `${URL}/api/webhook`,
+      primaryCategory: process.env.VITE_PUBLIC_APP_PRIMARY_CATEGORY,
+      tags: [],
+      heroImageUrl: process.env.VITE_PUBLIC_APP_HERO_IMAGE,
+      tagline: process.env.VITE_PUBLIC_APP_TAGLINE,
+      ogTitle: process.env.VITE_PUBLIC_APP_OG_TITLE,
+      ogDescription: process.env.VITE_PUBLIC_APP_OG_DESCRIPTION,
+      ogImageUrl: process.env.VITE_PUBLIC_APP_OG_IMAGE,
+      // use only while testing
+      noindex: true,
+    }),
+  });
+}
+```
+
+### Netlify Functions
+Create `netlify/functions/farcaster-manifest.js` and configure redirects.
+
+## Option 3: Framework with SSR
+
+For the most flexibility, consider using a framework with server-side rendering:
+- Next.js (recommended for full Mini App features)
+- SvelteKit  
+- Nuxt.js
+
+These frameworks provide API routes and can generate dynamic manifests with environment variables.
+
+Review the full [Manifest guide](/mini-apps/features/manifest) and update all fields. Be sure to update your deployment environment with these values.
+
+<Warning>
+Static manifests require manual updates when credentials change. Consider serverless functions for production apps.
+</Warning>
