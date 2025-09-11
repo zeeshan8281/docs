@@ -5,11 +5,40 @@ description: Which Mini App features are supported in Base App (TBA) today
 
 Base App is working towards full compatibility with the Farcaster Mini App SDK. During beta, some features are not yet supported.
 
-## Currently Unsupported (examples)
 
+## Supported SDK Actions
+
+The Base app supports the following SDK actions for mini apps:
+
+### Core Actions
+- `addMiniApp` - Add a mini app to the user's collection
+- `close` - Close the current mini app
+- `ready` - Signal that the mini app is ready
+- `openUrl` - Open external URLs
+- `openMiniApp` - Navigate to another mini app
+
+### Social Actions
+- `composeCast` - Open the cast composer
+- `signIn` - Authenticate the user
+- `viewProfile` - View user profiles
+- `viewCast` - View specific casts
+
+### Financial Actions
+- `swap` - Open the swap form with pre-filled tokens (user can modify before executing)
+- `Tokensend` - Send tokens
+- `Tokenview` - View token details
+- `Tokenrequest` - Request tokens from users
+
+### Device Features
+- `CameraAndMicrophoneAccess` - Access device camera and microphone
+- `Haptics` - Trigger haptic feedback
+
+
+## Currently Unsupported Actions
 
 - Notifications: not yet supported
 - Mini App actions: `.addMiniApp()`, `` (ETA 9/26)
+- signManifest 
 
 ## Base App Client Detection
 
