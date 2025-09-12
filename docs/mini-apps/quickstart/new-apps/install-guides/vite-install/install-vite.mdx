@@ -3,9 +3,6 @@ title: Create MiniKit App (Vite)
 description: Create a new Mini App using Vite and MiniKit
 ---
 
-# Create MiniKit App (Vite)
-
-Create a new Mini App using Vite and MiniKit.
 
 ## Requirements
 
@@ -25,6 +22,23 @@ npm install
 
 ```bash
 npm install @coinbase/onchainkit viem
+```
+
+## Configure Vite
+
+Update your `vite.config.ts` to add required polyfills:
+
+```ts vite.config.ts
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [react()],
+  define: {
+    'process.env': {},
+    global: 'globalThis'
+  }
+})
 ```
 
 ## Configure
@@ -124,7 +138,7 @@ Your Mini App will run at http://localhost:5173.
 
 ## Deploy
 
-Deploy to Vercel or Netlify to get an HTTPS URL, then update `VITE_PUBLIC_URL` in your environment variables.
+Deploy your app and update `VITE_PUBLIC_URL` with the HTTPS URL. This URL is required for generating Farcaster credentials.
 
 ## Generate Credentials
 
