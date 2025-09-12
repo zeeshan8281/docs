@@ -437,7 +437,7 @@
                   {
                     "group": "Install Guides",
                     "pages": [
-                      "mini-apps/quickstart/new-apps/install-guides/vite-install/install-vite"
+                      "mini-apps/quickstart/new-apps/install-guides/vite/install-vite"
                     ]
                   }
                 ]
