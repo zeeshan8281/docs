@@ -461,6 +461,7 @@
                       {
                         "group": "Vite and MiniKit",
                         "pages": [
+                          "mini-apps/quickstart/existing-apps/install-guides/vite-and-minikit/installation",
                           "mini-apps/quickstart/existing-apps/install-guides/vite-and-minikit/install",
                           "mini-apps/quickstart/existing-apps/install-guides/vite-and-minikit/add-minikit",
                           "mini-apps/quickstart/existing-apps/install-guides/vite-and-minikit/configure-environment",

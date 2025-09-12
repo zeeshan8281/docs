@@ -1,0 +1,136 @@
+---
+title: Install MiniKit (Vite)
+description: Add MiniKit to your existing Vite project
+---
+
+# Install MiniKit (Vite)
+
+Add MiniKit to your existing Vite project.
+
+## Requirements
+
+- Deployed Vite app with HTTPS URL
+- [Coinbase Developer Platform](https://portal.cdp.coinbase.com) API key
+- Access to Farcaster custody wallet
+
+## Install
+
+```bash
+npm install @coinbase/onchainkit
+```
+
+## Configure
+
+Add environment variables:
+
+```env
+VITE_PUBLIC_ONCHAINKIT_API_KEY=your_cdp_api_key
+VITE_PUBLIC_URL=https://your-app.vercel.app
+```
+
+Wrap your app with the provider:
+
+```tsx src/main.tsx
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import { MiniKitProvider } from '@coinbase/onchainkit/minikit'
+import { base } from 'viem/chains'
+import App from './App'
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <MiniKitProvider
+    apiKey={import.meta.env.VITE_PUBLIC_ONCHAINKIT_API_KEY}
+    chain={base}
+  >
+    <App />
+  </MiniKitProvider>
+)
+```
+
+## Initialize
+
+Add the hook to your main component:
+
+```tsx src/App.tsx
+import { useEffect } from 'react'
+import { useMiniKit } from '@coinbase/onchainkit/minikit'
+
+export default function App() {
+  const { setFrameReady, isFrameReady } = useMiniKit()
+
+  useEffect(() => {
+    if (!isFrameReady) setFrameReady()
+  }, [isFrameReady, setFrameReady])
+
+  return <div>Your app content</div>
+}
+```
+
+## Generate Credentials
+
+Run the CLI to generate Farcaster account association:
+
+```bash
+npx create-onchain --manifest
+```
+
+This adds `FARCASTER_HEADER`, `FARCASTER_PAYLOAD`, and `FARCASTER_SIGNATURE` to your `.env`.
+
+## Create Manifest
+
+Create the manifest file:
+
+```json public/.well-known/farcaster.json
+{
+  "accountAssociation": {
+    "header": "process.env.FARCASTER_HEADER",
+    "payload": "process.env.FARCASTER_PAYLOAD", 
+    "signature": "process.env.FARCASTER_SIGNATURE"
+  },
+  "frame": {
+    "version": "1",
+    "name": "Your App Name",
+    "iconUrl": "https://your-app.vercel.app/icon.png",
+    "splashImageUrl": "https://your-app.vercel.app/splash.png",
+    "splashBackgroundColor": "#000000",
+    "homeUrl": "https://your-app.vercel.app",
+    "noindex": true
+  }
+}
+```
+
+Replace the placeholder values with your actual environment variables.
+
+## Add Embed Metadata
+
+Add Farcaster embed metadata to your index.html so your app can be shared in feeds:
+
+```html index.html
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/icon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Your Mini App</title>
+    
+    <!-- Farcaster Mini App Embed -->
+    <meta name="fc:frame" content='{"version":"next","imageUrl":"https://your-app.vercel.app/preview.png","button":{"title":"Launch App","action":{"type":"launch_frame","url":"https://your-app.vercel.app","splashImageUrl":"https://your-app.vercel.app/splash.png","splashBackgroundColor":"#000000"}}}' />
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="Your Mini App" />
+    <meta property="og:description" content="Description of your app" />
+    <meta property="og:image" content="https://your-app.vercel.app/og.png" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+```
+
+## Deploy
+
+Deploy your app and verify the manifest loads at `https://your-app.vercel.app/.well-known/farcaster.json`.
+
+Test in [Base App Debug Tool](https://www.base.dev/preview).
