@@ -1,0 +1,189 @@
+---
+title: Create MiniKit App (Vite)
+description: Create a new Mini App using Vite and MiniKit
+---
+
+# Create MiniKit App (Vite)
+
+Create a new Mini App using Vite and MiniKit.
+
+## Requirements
+
+- Node.js 18+ installed
+- [Coinbase Developer Platform](https://portal.cdp.coinbase.com) API key
+- Access to Farcaster custody wallet for publishing
+
+## Create Project
+
+```bash
+npm create vite@latest my-mini-app -- --template react-ts
+cd my-mini-app
+npm install
+```
+
+## Install MiniKit
+
+```bash
+npm install @coinbase/onchainkit viem
+```
+
+## Configure
+
+Add environment variables:
+
+```env
+VITE_PUBLIC_ONCHAINKIT_API_KEY=your_cdp_api_key
+VITE_PUBLIC_URL=https://your-app.vercel.app
+VITE_PUBLIC_APP_NAME=My Mini App
+```
+
+Wrap your app with the provider:
+
+```tsx src/main.tsx
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import { MiniKitProvider } from '@coinbase/onchainkit/minikit'
+import { base } from 'viem/chains'
+import App from './App'
+import './index.css'
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <MiniKitProvider
+      apiKey={import.meta.env.VITE_PUBLIC_ONCHAINKIT_API_KEY}
+      chain={base}
+    >
+      <App />
+    </MiniKitProvider>
+  </React.StrictMode>
+)
+```
+
+## Initialize
+
+Replace your App component with MiniKit initialization:
+
+```tsx src/App.tsx
+import { useEffect } from 'react'
+import { useMiniKit } from '@coinbase/onchainkit/minikit'
+import './App.css'
+
+export default function App() {
+  const { setFrameReady, isFrameReady } = useMiniKit()
+
+  useEffect(() => {
+    if (!isFrameReady) setFrameReady()
+  }, [isFrameReady, setFrameReady])
+
+  return (
+    <div className="App">
+      <header className="App-header">
+        <h1>My Mini App</h1>
+        <p>Welcome to your new Mini App!</p>
+      </header>
+    </div>
+  )
+}
+```
+
+## Add Embed Metadata
+
+Update your `index.html` file with embed metadata:
+
+```html index.html
+<!doctype html>
+<html lang="en">
+  <head>
+  <meta name="fc:miniapp" content='{
+  "version":"next",
+  "imageUrl":"https://your-app.com/embed-image",
+  "button":{
+    "title":"Play Now",
+    "action":{
+      "type":"launch_frame",
+      "name":"Your App Name",
+      "url":"https://your-app.com"
+    }
+  }
+}' />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+```
+
+## Test Locally
+
+```bash
+npm run dev
+```
+
+Your Mini App will run at http://localhost:5173.
+
+## Deploy
+
+Deploy to Vercel or Netlify to get an HTTPS URL, then update `VITE_PUBLIC_URL` in your environment variables.
+
+## Generate Credentials
+
+After deployment, run the CLI to generate Farcaster account association:
+
+```bash
+npx create-onchain --manifest
+```
+
+This adds `FARCASTER_HEADER`, `FARCASTER_PAYLOAD`, and `FARCASTER_SIGNATURE` to your `.env`.
+
+## Create Manifest
+
+Create the manifest file:
+
+```json public/.well-known/farcaster.json
+{
+  "accountAssociation": {
+    "header": "eyJmaWQiOjkxNTIsInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHgwMmVmNzkwRGQ3OTkzQTM1ZkQ4NDdDMDUzRURkQUU5NDBEMDU1NTk2In0",
+    "payload": "eyJkb21haW4iOiJhcHAuZXhhbXBsZS5jb20ifQ",
+    "signature": "MHgxMGQwZGU4ZGYwZDUwZTdmMGIxN2YxMTU2NDI1MjRmZTY0MTUyZGU4ZGU1MWU0MThiYjU4ZjVmZmQxYjRjNDBiNGVlZTRhNDcwNmVmNjhlMzQ0ZGQ5MDBkYmQyMmNlMmVlZGY5ZGQ0N2JlNWRmNzMwYzUxNjE4OWVjZDJjY2Y0MDFj"
+  },
+  "baseBuilder": {
+    "allowedAddresses": ["0x..."]
+  },
+  "miniapp": {
+    "version": "1",
+    "name": "Example Mini App",
+    "homeUrl": "https://ex.co",
+    "iconUrl": "https://ex.co/i.png",
+    "splashImageUrl": "https://ex.co/l.png",
+    "splashBackgroundColor": "#000000",
+    "webhookUrl": "https://ex.co/api/webhook",
+    "subtitle": "Fast, fun, social",
+    "description": "A fast, fun way to challenge friends in real time.",
+    "screenshotUrls": [
+      "https://ex.co/s1.png",
+      "https://ex.co/s2.png",
+      "https://ex.co/s3.png"
+    ],
+    "primaryCategory": "social",
+    "tags": ["example", "miniapp", "baseapp"],
+    "heroImageUrl": "https://ex.co/og.png",
+    "tagline": "Play instantly",
+    "ogTitle": "Example Mini App",
+    "ogDescription": "Challenge friends in real time.",
+    "ogImageUrl": "https://ex.co/og.png",
+    "noindex": true
+  }
+}
+```
+
+Replace the placeholder values with your actual environment variables from the CLI output.
+
+## Verify
+
+Deploy your changes and verify:
+
+- Manifest loads at `https://your-app.vercel.app/.well-known/farcaster.json`
+- Test in [Warpcast Debug Tool](https://warpcast.com/~/developers/frames)
+
+Your Mini App is now ready for development!
