@@ -39,13 +39,15 @@ vercel env add NEXT_PUBLIC_URL=https://your-vercel-project-name.vercel.app
 The `minikit.config.ts` file is responsible for configuring your manifest located at `app/.well-known/farcaster.json` and creating embed metadata. 
 
 <Tip> You can customize the manifest by updating the `miniapp` object.</Tip>
-
+<Info>
+Note: ROOT_URL references your NEXT_PUBLIC_URL environment variable, so it will automatically use the Vercel URL you set in Step 3.
+</Info>
 
 
 For details on each field, see the [field reference](/mini-apps/features/manifest#field-reference).
 ```ts minikit.config.ts
 export const minikitConfig = {
-  accountAssociation: { // this will be added in step 5
+  accountAssociation: { // this will be added in step 6
     "header": "",
     "payload": "",
     "signature": ""
