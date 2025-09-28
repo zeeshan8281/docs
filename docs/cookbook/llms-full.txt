@@ -20,6 +20,7 @@
 - [Onchain Social](https://docs.base.org/cookbook/onchain-social.md) — Social growth mechanics
 - [DeFi Your App](https://docs.base.org/cookbook/defi-your-app.md) — Add finance features
 - [Go Gasless](https://docs.base.org/cookbook/go-gasless.md) — Sponsor gas
+- [Build Cross-Chain Applications](https://docs.base.org/cookbook/build-cross-chain-apps.md) — Multi-chain architecture, bridging, messaging
 - [Base App Coins](https://docs.base.org/cookbook/base-app-coins.md) — Coins in Base App
 - [Testing Onchain Apps](https://docs.base.org/cookbook/testing-onchain-apps.md) — Testing strategies
 

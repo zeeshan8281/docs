@@ -16,6 +16,8 @@
 - [Base App Coins](https://docs.base.org/cookbook/base-app-coins.md) — Coins in Base App
 - [Testing Onchain Apps](https://docs.base.org/cookbook/testing-onchain-apps.md) — Testing strategies
 
+- [Build Cross-Chain Applications](https://docs.base.org/cookbook/build-cross-chain-apps.md) — Multi-chain architecture, bridging, messaging
+
 ## Build with AI
 - [AI Prompting](https://docs.base.org/cookbook/ai-prompting.md) — Prompt patterns
 - [Base Builder MCP](https://docs.base.org/cookbook/base-builder-mcp.md) — Build-on-Base MCP guide

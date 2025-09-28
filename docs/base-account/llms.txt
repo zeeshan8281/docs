@@ -14,6 +14,7 @@
 ## Guides
 - [Authenticate Users](https://docs.base.org/base-account/guides/authenticate-users.md) — SIWE with ERC‑6492 signatures
 - [Accept Payments](https://docs.base.org/base-account/guides/accept-payments.md) — One‑tap USDC payments with Base Pay
+- [Advanced Authentication Patterns](https://docs.base.org/base-account/guides/advanced-authentication.md) — MFA, sessions, enterprise SSO
 
 ## Framework Integrations
 - [Wagmi: Setup](https://docs.base.org/base-account/framework-integrations/wagmi/setup.md) — Configure connectors and chains
