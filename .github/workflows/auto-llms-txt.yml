@@ -66,7 +66,8 @@ jobs:
           HEAD_REF="${{ github.head_ref }}"
           BRANCH_PREFIX="${{ env.BRANCH_PREFIX }}"
           
-          cursor-agent -p "You are operating in a GitHub Actions runner to automatically update llms.txt and llms-full.txt files.
+          # Run cursor-agent and capture output
+          AGENT_OUTPUT=$(cursor-agent -p "You are operating in a GitHub Actions runner to automatically update llms.txt and llms-full.txt files.
 
           The GitHub CLI is available as \`gh\` and authenticated via \`GH_TOKEN\`. Git is available. You have write access to repository contents and can comment on pull requests, but you must not create or edit PRs directly.
 
@@ -130,4 +131,24 @@ jobs:
           - Keep all changes minimal and consistent with existing documentation style
           
           CRITICAL: After completing ANY of the above actions (stop command, updates completed, or no updates needed), you MUST immediately exit by running 'exit 0'. Do not continue running or wait for additional input.
-          " --force --model "$MODEL" --output-format=json
+          " --force --model "$MODEL" --output-format=json)
+          
+          # Parse the JSON response
+          echo "Agent output: $AGENT_OUTPUT"
+          
+          # Check if the agent completed successfully
+          if echo "$AGENT_OUTPUT" | jq -e '.type == "result" and .subtype == "success"' > /dev/null; then
+            echo "✅ Agent completed successfully"
+            
+            # Extract the result message
+            RESULT_MESSAGE=$(echo "$AGENT_OUTPUT" | jq -r '.result')
+            echo "Result: $RESULT_MESSAGE"
+            
+            # Force exit the action
+            echo "🏁 Forcing action to exit"
+            exit 0
+          else
+            echo "❌ Agent did not complete successfully"
+            echo "Raw output: $AGENT_OUTPUT"
+            exit 1
+          fi
