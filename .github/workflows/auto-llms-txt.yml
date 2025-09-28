@@ -98,16 +98,17 @@ jobs:
           Analyze changes in the original PR and determine if they are significant enough to warrant updating the llms.txt and llms-full.txt files for the affected directories. If so, create a separate PR with the updates.
 
           # Requirements:
-          1) Use \`gh pr diff\` to analyze what changed in the original PR
+          1) Use run_terminal_cmd to execute \`gh pr diff ${PR_NUMBER}\` to analyze what changed in the original PR
           2) Determine which documentation directories are affected by the changes
           3) Assess if the changes are significant enough to update the llms.txt files (new content, major restructuring, new features, etc.)
           4) If changes are significant:
-             - Create or update a persistent branch named \`${BRANCH_PREFIX}/pr-${PR_NUMBER}\`
-             - Update the relevant llms.txt and llms-full.txt files to reflect the new documentation structure and content
-             - Push the changes to the branch
-             - Comment on the original PR with a summary and a compare link to create the PR
+             - Use run_terminal_cmd to create or update a persistent branch named \`${BRANCH_PREFIX}/pr-${PR_NUMBER}\`
+             - Use read_file to read existing llms.txt and llms-full.txt files
+             - Use search_replace or write to update the relevant llms.txt and llms-full.txt files
+             - Use run_terminal_cmd to push the changes to the branch
+             - Use run_terminal_cmd to comment on the original PR with a summary and a compare link
           5) If changes are not significant:
-             - Comment on the original PR explaining that no llms.txt updates are needed
+             - Use run_terminal_cmd to comment on the original PR explaining that no llms.txt updates are needed
 
           # File Format Guidelines:
           - llms.txt files should be concise, focused summaries with key links
