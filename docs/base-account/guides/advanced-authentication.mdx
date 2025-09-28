@@ -1,0 +1,475 @@
+---
+title: "Advanced Authentication Patterns"
+description: "Implement sophisticated authentication flows with Base Account including multi-factor authentication, session management, and enterprise integrations."
+---
+
+# Advanced Authentication Patterns
+
+Base Account provides powerful authentication capabilities beyond basic wallet connection. This guide covers advanced patterns for building secure, enterprise-ready authentication systems.
+
+## Multi-Factor Authentication (MFA)
+
+### Passkey + Biometric Authentication
+
+Combine passkeys with device biometrics for enhanced security:
+
+```typescript
+import { createBaseAccount } from '@base-account/core'
+
+const account = await createBaseAccount({
+  authentication: {
+    primary: 'passkey',
+    secondary: 'biometric',
+    fallback: 'recovery-phrase'
+  }
+})
+
+// Authenticate with both factors
+const session = await account.authenticate({
+  requireBoth: true,
+  biometricPrompt: 'Confirm your identity'
+})
+```
+
+### Time-Based One-Time Passwords (TOTP)
+
+Integrate TOTP for additional security:
+
+```typescript
+import { generateTOTPSecret, verifyTOTP } from '@base-account/totp'
+
+class TOTPAuthenticator {
+  async setupTOTP(account: BaseAccount) {
+    const secret = generateTOTPSecret()
+    
+    // Store encrypted secret
+    await account.secureStorage.set('totp_secret', secret, {
+      encrypted: true,
+      requireAuth: true
+    })
+    
+    return {
+      secret,
+      qrCode: this.generateQRCode(secret, account.address)
+    }
+  }
+  
+  async verifyTOTP(account: BaseAccount, token: string) {
+    const secret = await account.secureStorage.get('totp_secret')
+    return verifyTOTP(secret, token)
+  }
+}
+```
+
+## Session Management
+
+### Secure Session Tokens
+
+Implement secure, time-limited sessions:
+
+```typescript
+interface SessionConfig {
+  duration: number // milliseconds
+  refreshable: boolean
+  deviceBinding: boolean
+  ipRestriction?: string[]
+}
+
+class SessionManager {
+  async createSession(
+    account: BaseAccount,
+    config: SessionConfig
+  ): Promise<SessionToken> {
+    const sessionId = crypto.randomUUID()
+    const expiresAt = Date.now() + config.duration
+    
+    const session = {
+      id: sessionId,
+      accountAddress: account.address,
+      expiresAt,
+      deviceFingerprint: config.deviceBinding ? 
+        await this.getDeviceFingerprint() : null,
+      allowedIPs: config.ipRestriction
+    }
+    
+    // Store session securely
+    await this.storeSession(session)
+    
+    return this.generateJWT(session)
+  }
+  
+  async refreshSession(token: SessionToken): Promise<SessionToken> {
+    const session = await this.validateAndGetSession(token)
+    
+    if (!session.refreshable) {
+      throw new Error('Session not refreshable')
+    }
+    
+    return this.createSession(session.account, {
+      duration: session.originalDuration,
+      refreshable: true,
+      deviceBinding: session.deviceBinding
+    })
+  }
+}
+```
+
+### Cross-Device Session Sync
+
+Synchronize sessions across user devices:
+
+```typescript
+class CrossDeviceSessionManager {
+  async syncSessions(account: BaseAccount) {
+    // Get all active sessions for account
+    const sessions = await this.getActiveSessions(account.address)
+    
+    // Sync to secure cloud storage
+    await account.cloudSync.set('active_sessions', sessions, {
+      encrypted: true,
+      requireConsent: true
+    })
+  }
+  
+  async authorizeNewDevice(
+    account: BaseAccount,
+    deviceInfo: DeviceInfo
+  ): Promise<boolean> {
+    // Require approval from existing device
+    const approval = await this.requestDeviceApproval(
+      account,
+      deviceInfo
+    )
+    
+    if (approval.approved) {
+      await this.addAuthorizedDevice(account, deviceInfo)
+      return true
+    }
+    
+    return false
+  }
+}
+```
+
+## Enterprise Integration
+
+### SAML SSO Integration
+
+Integrate with enterprise SAML providers:
+
+```typescript
+import { SAMLProvider } from '@base-account/enterprise'
+
+class EnterpriseAuth {
+  async configureSAML(config: SAMLConfig) {
+    const provider = new SAMLProvider({
+      entityId: config.entityId,
+      ssoUrl: config.ssoUrl,
+      certificate: config.certificate,
+      attributeMapping: {
+        email: 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress',
+        name: 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name',
+        department: 'http://schemas.example.com/department'
+      }
+    })
+    
+    return provider
+  }
+  
+  async authenticateWithSAML(
+    samlResponse: string,
+    account: BaseAccount
+  ) {
+    const provider = this.getSAMLProvider()
+    const assertion = await provider.validateResponse(samlResponse)
+    
+    // Link SAML identity to Base Account
+    await account.linkIdentity('saml', {
+      nameId: assertion.nameId,
+      attributes: assertion.attributes,
+      sessionIndex: assertion.sessionIndex
+    })
+    
+    return assertion
+  }
+}
+```
+
+### OAuth 2.0 / OpenID Connect
+
+Support OAuth providers:
+
+```typescript
+class OAuthIntegration {
+  async configureOAuth(provider: OAuthProvider) {
+    return {
+      clientId: provider.clientId,
+      redirectUri: provider.redirectUri,
+      scopes: ['openid', 'profile', 'email'],
+      pkceEnabled: true
+    }
+  }
+  
+  async handleOAuthCallback(
+    code: string,
+    state: string,
+    account: BaseAccount
+  ) {
+    // Exchange code for tokens
+    const tokens = await this.exchangeCodeForTokens(code, state)
+    
+    // Get user info
+    const userInfo = await this.getUserInfo(tokens.accessToken)
+    
+    // Link to Base Account
+    await account.linkIdentity('oauth', {
+      provider: this.providerName,
+      subject: userInfo.sub,
+      profile: userInfo
+    })
+    
+    return { tokens, userInfo }
+  }
+}
+```
+
+## Advanced Security Features
+
+### Risk-Based Authentication
+
+Implement adaptive authentication based on risk factors:
+
+```typescript
+class RiskAssessment {
+  async assessRisk(
+    account: BaseAccount,
+    context: AuthContext
+  ): Promise<RiskScore> {
+    const factors = {
+      deviceTrust: await this.assessDeviceTrust(context.device),
+      locationRisk: await this.assessLocationRisk(context.location),
+      behaviorPattern: await this.assessBehaviorPattern(
+        account,
+        context.behavior
+      ),
+      networkRisk: await this.assessNetworkRisk(context.network)
+    }
+    
+    const score = this.calculateRiskScore(factors)
+    
+    return {
+      score,
+      factors,
+      recommendation: this.getRecommendation(score)
+    }
+  }
+  
+  getRecommendation(score: number): AuthRecommendation {
+    if (score < 0.3) return 'ALLOW'
+    if (score < 0.7) return 'CHALLENGE'
+    return 'DENY'
+  }
+}
+```
+
+### Zero-Knowledge Proofs
+
+Implement privacy-preserving authentication:
+
+```typescript
+import { generateProof, verifyProof } from '@base-account/zk'
+
+class ZKAuthentication {
+  async generateIdentityProof(
+    account: BaseAccount,
+    claim: IdentityClaim
+  ): Promise<ZKProof> {
+    const circuit = await this.loadCircuit('identity-verification')
+    
+    const proof = await generateProof(circuit, {
+      privateInputs: {
+        identity: account.identity,
+        secret: account.zkSecret
+      },
+      publicInputs: {
+        claim: claim,
+        timestamp: Date.now()
+      }
+    })
+    
+    return proof
+  }
+  
+  async verifyIdentityProof(proof: ZKProof): Promise<boolean> {
+    const circuit = await this.loadCircuit('identity-verification')
+    return verifyProof(circuit, proof)
+  }
+}
+```
+
+## Audit and Compliance
+
+### Authentication Logging
+
+Comprehensive audit logging:
+
+```typescript
+class AuthenticationAuditor {
+  async logAuthEvent(event: AuthEvent) {
+    const auditLog = {
+      timestamp: new Date().toISOString(),
+      eventType: event.type,
+      accountAddress: event.account,
+      deviceId: event.deviceId,
+      ipAddress: event.ipAddress,
+      userAgent: event.userAgent,
+      success: event.success,
+      failureReason: event.failureReason,
+      riskScore: event.riskScore,
+      metadata: event.metadata
+    }
+    
+    // Store in immutable audit log
+    await this.auditStorage.append(auditLog)
+    
+    // Alert on suspicious activity
+    if (this.isSuspicious(event)) {
+      await this.alertSecurityTeam(auditLog)
+    }
+  }
+  
+  async generateComplianceReport(
+    startDate: Date,
+    endDate: Date
+  ): Promise<ComplianceReport> {
+    const logs = await this.auditStorage.query({
+      timestamp: { $gte: startDate, $lte: endDate }
+    })
+    
+    return {
+      totalAuthentications: logs.length,
+      successfulAuthentications: logs.filter(l => l.success).length,
+      failedAuthentications: logs.filter(l => !l.success).length,
+      uniqueUsers: new Set(logs.map(l => l.accountAddress)).size,
+      riskDistribution: this.calculateRiskDistribution(logs),
+      complianceStatus: this.assessCompliance(logs)
+    }
+  }
+}
+```
+
+### GDPR Compliance
+
+Implement privacy controls:
+
+```typescript
+class PrivacyManager {
+  async handleDataRequest(
+    account: BaseAccount,
+    requestType: 'export' | 'delete' | 'rectify'
+  ) {
+    switch (requestType) {
+      case 'export':
+        return this.exportUserData(account)
+      case 'delete':
+        return this.deleteUserData(account)
+      case 'rectify':
+        return this.rectifyUserData(account)
+    }
+  }
+  
+  async exportUserData(account: BaseAccount) {
+    const data = {
+      profile: await account.getProfile(),
+      authHistory: await this.getAuthHistory(account),
+      linkedIdentities: await account.getLinkedIdentities(),
+      preferences: await account.getPreferences()
+    }
+    
+    // Anonymize sensitive data
+    return this.anonymizeExport(data)
+  }
+  
+  async deleteUserData(account: BaseAccount) {
+    // Soft delete with retention policy
+    await account.markForDeletion({
+      retentionPeriod: 90, // days
+      preserveAuditTrail: true
+    })
+    
+    // Remove from active systems
+    await this.removeFromActiveSystems(account)
+  }
+}
+```
+
+## Testing Advanced Authentication
+
+### Unit Tests
+
+```typescript
+describe('Advanced Authentication', () => {
+  describe('MFA', () => {
+    it('should require both passkey and TOTP', async () => {
+      const account = await createTestAccount()
+      const mfa = new MultiFactorAuth()
+      
+      await mfa.setupTOTP(account)
+      
+      const result = await mfa.authenticate(account, {
+        passkey: validPasskey,
+        totp: validTOTP
+      })
+      
+      expect(result.success).toBe(true)
+      expect(result.factors).toHaveLength(2)
+    })
+  })
+  
+  describe('Session Management', () => {
+    it('should refresh sessions before expiry', async () => {
+      const sessionManager = new SessionManager()
+      const session = await sessionManager.createSession(account, {
+        duration: 3600000, // 1 hour
+        refreshable: true
+      })
+      
+      // Fast-forward time
+      jest.advanceTimersByTime(3000000) // 50 minutes
+      
+      const refreshed = await sessionManager.refreshSession(session)
+      expect(refreshed).toBeDefined()
+      expect(refreshed.expiresAt).toBeGreaterThan(session.expiresAt)
+    })
+  })
+})
+```
+
+## Best Practices
+
+### Security Guidelines
+
+1. **Defense in Depth**: Layer multiple authentication factors
+2. **Zero Trust**: Verify every request regardless of source
+3. **Least Privilege**: Grant minimal necessary permissions
+4. **Regular Rotation**: Rotate secrets and tokens regularly
+
+### Performance Optimization
+
+1. **Cache Wisely**: Cache non-sensitive authentication data
+2. **Async Operations**: Use async patterns for auth flows
+3. **Connection Pooling**: Pool database connections
+4. **Rate Limiting**: Implement intelligent rate limiting
+
+### User Experience
+
+1. **Progressive Enhancement**: Start simple, add complexity gradually
+2. **Clear Communication**: Explain security requirements
+3. **Fallback Options**: Always provide recovery mechanisms
+4. **Responsive Design**: Work across all device types
+
+## Conclusion
+
+Advanced authentication patterns enable you to build secure, enterprise-ready applications while maintaining excellent user experience. Start with basic patterns and gradually implement more sophisticated features as your application grows.
+
+Remember to always prioritize security while keeping the user experience smooth and intuitive.

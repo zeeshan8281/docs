@@ -1,0 +1,357 @@
+---
+title: "Build Cross-Chain Applications"
+description: "Learn how to build applications that work seamlessly across multiple blockchain networks using Base as your primary chain."
+---
+
+# Build Cross-Chain Applications
+
+Building applications that work across multiple blockchain networks is essential for reaching users wherever they are. This guide shows you how to create cross-chain applications using Base as your primary chain while integrating with other networks.
+
+## Overview
+
+Cross-chain applications allow users to interact with multiple blockchain networks from a single interface. By building on Base, you get the benefits of low fees and fast transactions while maintaining compatibility with the broader Ethereum ecosystem.
+
+## Key Benefits
+
+- **Expanded user base**: Reach users across different blockchain networks
+- **Enhanced liquidity**: Access assets from multiple chains
+- **Improved user experience**: Seamless interactions without manual bridging
+- **Future-proof architecture**: Ready for a multi-chain world
+
+## Architecture Patterns
+
+### 1. Hub and Spoke Model
+
+Use Base as your primary hub while connecting to other chains:
+
+```typescript
+// Base as the primary chain
+const baseConfig = {
+  chainId: 8453,
+  name: 'Base',
+  contracts: {
+    multicall: '0x...',
+    registry: '0x...'
+  }
+}
+
+// Connected chains
+const supportedChains = [
+  { chainId: 1, name: 'Ethereum' },
+  { chainId: 137, name: 'Polygon' },
+  { chainId: 42161, name: 'Arbitrum' }
+]
+```
+
+### 2. Multi-Chain State Management
+
+Synchronize state across chains:
+
+```typescript
+interface CrossChainState {
+  baseState: BaseChainState
+  remoteStates: Map<number, RemoteChainState>
+  pendingBridges: BridgeTransaction[]
+}
+
+class CrossChainManager {
+  async syncState(chainId: number) {
+    const remoteState = await this.fetchRemoteState(chainId)
+    this.updateState(chainId, remoteState)
+  }
+}
+```
+
+## Implementation Steps
+
+### Step 1: Set Up Multi-Chain Configuration
+
+Configure your application to support multiple networks:
+
+```typescript
+import { createConfig, http } from 'wagmi'
+import { base, mainnet, polygon, arbitrum } from 'wagmi/chains'
+
+const config = createConfig({
+  chains: [base, mainnet, polygon, arbitrum],
+  transports: {
+    [base.id]: http(),
+    [mainnet.id]: http(),
+    [polygon.id]: http(),
+    [arbitrum.id]: http(),
+  },
+})
+```
+
+### Step 2: Implement Bridge Integration
+
+Integrate with bridge protocols for asset transfers:
+
+```typescript
+import { LayerZero, Stargate } from '@layerzerolabs/sdk'
+
+class BridgeService {
+  async bridgeAssets(
+    fromChain: number,
+    toChain: number,
+    asset: string,
+    amount: bigint
+  ) {
+    // Use LayerZero for messaging
+    const lzEndpoint = this.getLZEndpoint(fromChain)
+    
+    // Bridge assets using Stargate
+    const bridgeTx = await this.stargate.swap(
+      fromChain,
+      toChain,
+      asset,
+      amount
+    )
+    
+    return bridgeTx
+  }
+}
+```
+
+### Step 3: Create Unified User Interface
+
+Build a single interface that works across chains:
+
+```typescript
+function CrossChainDashboard() {
+  const [selectedChain, setSelectedChain] = useState(base.id)
+  const { data: balances } = useMultiChainBalances()
+  
+  return (
+    <div>
+      <ChainSelector 
+        selected={selectedChain}
+        onChange={setSelectedChain}
+      />
+      <AssetList 
+        balances={balances[selectedChain]}
+        onBridge={handleBridge}
+      />
+    </div>
+  )
+}
+```
+
+## Advanced Features
+
+### Cross-Chain Messaging
+
+Implement messaging between chains:
+
+```solidity
+// CrossChainMessenger.sol
+contract CrossChainMessenger {
+    mapping(uint16 => address) public trustedRemotes;
+    
+    function sendMessage(
+        uint16 _dstChainId,
+        bytes memory _message
+    ) external payable {
+        _lzSend(
+            _dstChainId,
+            _message,
+            payable(msg.sender),
+            address(0x0),
+            bytes(""),
+            msg.value
+        );
+    }
+}
+```
+
+### Unified Asset Management
+
+Create a unified view of assets across chains:
+
+```typescript
+class AssetManager {
+  async getUnifiedPortfolio(userAddress: string) {
+    const chains = [base.id, mainnet.id, polygon.id]
+    
+    const portfolios = await Promise.all(
+      chains.map(chainId => 
+        this.getChainPortfolio(chainId, userAddress)
+      )
+    )
+    
+    return this.consolidatePortfolios(portfolios)
+  }
+}
+```
+
+## Best Practices
+
+### 1. Gas Optimization
+
+- Use Base for frequent operations due to low gas costs
+- Batch transactions when possible
+- Implement gas estimation across chains
+
+### 2. Security Considerations
+
+- Validate cross-chain messages
+- Implement timeouts for bridge transactions
+- Use trusted bridge protocols
+
+### 3. User Experience
+
+- Show clear bridging status
+- Provide gas estimates
+- Handle failed transactions gracefully
+
+## Testing Strategy
+
+### Unit Tests
+
+Test individual components:
+
+```typescript
+describe('CrossChainManager', () => {
+  it('should sync state across chains', async () => {
+    const manager = new CrossChainManager()
+    await manager.syncState(polygon.id)
+    
+    expect(manager.getState(polygon.id)).toBeDefined()
+  })
+})
+```
+
+### Integration Tests
+
+Test cross-chain flows:
+
+```typescript
+describe('Bridge Integration', () => {
+  it('should bridge assets from Base to Ethereum', async () => {
+    const bridgeService = new BridgeService()
+    
+    const tx = await bridgeService.bridgeAssets(
+      base.id,
+      mainnet.id,
+      'USDC',
+      parseUnits('100', 6)
+    )
+    
+    expect(tx).toBeDefined()
+  })
+})
+```
+
+## Monitoring and Analytics
+
+### Track Cross-Chain Metrics
+
+```typescript
+class CrossChainAnalytics {
+  trackBridgeTransaction(
+    fromChain: number,
+    toChain: number,
+    asset: string,
+    amount: bigint
+  ) {
+    this.analytics.track('bridge_transaction', {
+      from_chain: fromChain,
+      to_chain: toChain,
+      asset,
+      amount: amount.toString()
+    })
+  }
+}
+```
+
+### Health Monitoring
+
+Monitor bridge and RPC health:
+
+```typescript
+class HealthMonitor {
+  async checkChainHealth(chainId: number) {
+    try {
+      const latestBlock = await this.getLatestBlock(chainId)
+      const blockAge = Date.now() - latestBlock.timestamp * 1000
+      
+      return {
+        healthy: blockAge < 60000, // 1 minute
+        blockAge,
+        chainId
+      }
+    } catch (error) {
+      return { healthy: false, error, chainId }
+    }
+  }
+}
+```
+
+## Deployment Considerations
+
+### Multi-Chain Deployment
+
+Deploy contracts across supported chains:
+
+```typescript
+// deploy.ts
+async function deployMultiChain() {
+  const chains = [base, polygon, arbitrum]
+  
+  for (const chain of chains) {
+    await deployToChain(chain.id)
+  }
+}
+```
+
+### Configuration Management
+
+Manage chain-specific configurations:
+
+```typescript
+const chainConfigs = {
+  [base.id]: {
+    rpcUrl: process.env.BASE_RPC_URL,
+    contracts: { /* Base contracts */ }
+  },
+  [polygon.id]: {
+    rpcUrl: process.env.POLYGON_RPC_URL,
+    contracts: { /* Polygon contracts */ }
+  }
+}
+```
+
+## Common Challenges and Solutions
+
+### 1. Bridge Delays
+
+**Challenge**: Bridge transactions can take time
+**Solution**: Implement optimistic UX with proper status tracking
+
+### 2. Gas Price Variations
+
+**Challenge**: Different gas costs across chains
+**Solution**: Dynamic gas estimation and user warnings
+
+### 3. Chain Reliability
+
+**Challenge**: RPC endpoints can be unreliable
+**Solution**: Implement fallback RPC providers
+
+## Resources
+
+- [LayerZero Documentation](https://layerzero.gitbook.io/)
+- [Stargate Finance](https://stargate.finance/)
+- [Chainlink CCIP](https://docs.chain.link/ccip)
+- [Hyperlane Protocol](https://docs.hyperlane.xyz/)
+
+## Next Steps
+
+1. Choose your bridge protocol
+2. Set up multi-chain configuration
+3. Implement core bridging functionality
+4. Add monitoring and analytics
+5. Test thoroughly across all supported chains
+6. Deploy and monitor
+
+Building cross-chain applications opens up new possibilities for user engagement and liquidity access. Start with Base as your primary chain and gradually expand to other networks as your application grows.
