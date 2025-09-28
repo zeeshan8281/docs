@@ -38,31 +38,6 @@ jobs:
           git config user.name "Cursor Agent"
           git config user.email "cursoragent@cursor.com"
 
-      - name: Check if already commented
-        id: check_comment
-        run: |
-          EXISTING_COMMENT=$(gh pr view ${{ github.event.pull_request.number }} --json comments --jq '.comments[] | select(.author.login == "github-actions[bot]" and (.body | contains("🤖 **LLMs.txt Auto-Update**")))')
-          if [ -n "$EXISTING_COMMENT" ]; then
-            echo "already_commented=true" >> $GITHUB_OUTPUT
-          else
-            echo "already_commented=false" >> $GITHUB_OUTPUT
-          fi
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Post initial comment
-        if: steps.check_comment.outputs.already_commented == 'false'
-        run: |
-          gh pr comment ${{ github.event.pull_request.number }} --body "🤖 **LLMs.txt Auto-Update**
-
-          Analyzing documentation changes to update llms.txt files...
-
-          💡 **Want to stop this process?** Comment \`STOP CURSOR\` below and I'll cancel the analysis.
-
-          ⏱️ This will timeout after 20 minutes."
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Update LLMs.txt files
         timeout-minutes: 20
         env:
@@ -74,11 +49,6 @@ jobs:
           cursor-agent -p "You are operating in a GitHub Actions runner to automatically update llms.txt and llms-full.txt files.
 
           The GitHub CLI is available as \`gh\` and authenticated via \`GH_TOKEN\`. Git is available. You have write access to repository contents and can comment on pull requests, but you must not create or edit PRs directly.
-
-          IMPORTANT: Before starting your analysis, check if the user wants to stop by running:
-          gh pr view ${{ github.event.pull_request.number }} --json comments --jq '.comments[] | select(.body | contains(\"STOP CURSOR\"))'
-          
-          If this returns any results, immediately post a cancellation comment and exit. Otherwise, proceed with your analysis.
 
           # Context:
           - Repo: ${{ github.repository }}
