@@ -58,29 +58,6 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BRANCH_PREFIX: auto-llms
         run: |
-          # Check for stop command every 30 seconds
-          check_stop() {
-            if gh pr view ${{ github.event.pull_request.number }} --json comments --jq -r '.comments[] | select(.body | contains("stop")) | .body' | grep -q stop; then
-              gh pr comment ${{ github.event.pull_request.number }} --body "⏹️ **Analysis Stopped**
-              
-              LLMs.txt analysis cancelled per user request."
-              exit 0
-            fi
-          }
-
-          # Run stop check in background
-          while true; do
-            sleep 30
-            check_stop
-          done &
-          STOP_PID=$!
-
-          # Cleanup function
-          cleanup() {
-            kill $STOP_PID 2>/dev/null || true
-          }
-          trap cleanup EXIT
-
           cursor-agent -p "You are operating in a GitHub Actions runner to automatically update llms.txt and llms-full.txt files.
 
           The GitHub CLI is available as \`gh\` and authenticated via \`GH_TOKEN\`. Git is available. You have write access to repository contents and can comment on pull requests, but you must not create or edit PRs directly.
