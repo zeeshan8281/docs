@@ -38,50 +38,55 @@ jobs:
           git config user.name "Cursor Agent"
           git config user.email "cursoragent@cursor.com"
 
+      - name: Check if already commented
+        id: check_comment
+        run: |
+          EXISTING_COMMENT=$(gh pr view ${{ github.event.pull_request.number }} --json comments --jq '.comments[] | select(.author.login == "github-actions[bot]" and (.body | contains("🤖 **LLMs.txt Auto-Update**")))')
+          if [ -n "$EXISTING_COMMENT" ]; then
+            echo "already_commented=true" >> $GITHUB_OUTPUT
+          else
+            echo "already_commented=false" >> $GITHUB_OUTPUT
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Post initial comment
+        if: steps.check_comment.outputs.already_commented == 'false'
         run: |
           gh pr comment ${{ github.event.pull_request.number }} --body "🤖 **LLMs.txt Auto-Update**
 
           Analyzing documentation changes to update llms.txt files...
 
-          💡 **Want to stop this process?** Comment \`stop\` below and I'll cancel the analysis.
+          💡 **Want to stop this process?** Comment \`STOP CURSOR\` below and I'll cancel the analysis.
 
-          ⏱️ This will timeout after 30 minutes."
+          ⏱️ This will timeout after 20 minutes."
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Update LLMs.txt files
-        timeout-minutes: 30
+        timeout-minutes: 20
         env:
           MODEL: gpt-5
           CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BRANCH_PREFIX: auto-llms
         run: |
-          # Expand variables for the agent
-          REPO="${{ github.repository }}"
-          OWNER="${{ github.repository_owner }}"
-          PR_NUMBER="${{ github.event.pull_request.number }}"
-          BASE_REF="${{ github.base_ref }}"
-          HEAD_REF="${{ github.head_ref }}"
-          BRANCH_PREFIX="${{ env.BRANCH_PREFIX }}"
-          
           cursor-agent -p "You are operating in a GitHub Actions runner to automatically update llms.txt and llms-full.txt files.
 
           The GitHub CLI is available as \`gh\` and authenticated via \`GH_TOKEN\`. Git is available. You have write access to repository contents and can comment on pull requests, but you must not create or edit PRs directly.
 
-          IMPORTANT: Before starting your analysis, use the run_terminal_cmd tool to execute:
-          gh pr view ${PR_NUMBER} --json comments --jq '.comments[] | select(.body | contains(\"stop\"))'
+          IMPORTANT: Before starting your analysis, check if the user wants to stop by running:
+          gh pr view ${{ github.event.pull_request.number }} --json comments --jq '.comments[] | select(.body | contains(\"STOP CURSOR\"))'
           
-          If this command returns any results, use run_terminal_cmd to post a cancellation comment on the PR and then use run_terminal_cmd to execute 'exit 0'. Otherwise, proceed with your analysis.
+          If this returns any results, immediately post a cancellation comment and exit. Otherwise, proceed with your analysis.
 
           # Context:
-          - Repo: ${REPO}
-          - Owner: ${OWNER}
-          - PR Number: ${PR_NUMBER}
-          - Base Ref: ${BASE_REF}
-          - Head Ref: ${HEAD_REF}
-          - Branch Prefix: ${BRANCH_PREFIX}
+          - Repo: ${{ github.repository }}
+          - Owner: ${{ github.repository_owner }}
+          - PR Number: ${{ github.event.pull_request.number }}
+          - Base Ref: ${{ github.base_ref }}
+          - Head Ref: ${{ github.head_ref }}
+          - Branch Prefix: ${{ env.BRANCH_PREFIX }}
 
           # Documentation Structure:
           This is a docs repository with the following main directories that each contain llms.txt and llms-full.txt files:
@@ -98,17 +103,16 @@ jobs:
           Analyze changes in the original PR and determine if they are significant enough to warrant updating the llms.txt and llms-full.txt files for the affected directories. If so, create a separate PR with the updates.
 
           # Requirements:
-          1) Use run_terminal_cmd to execute \`gh pr diff ${PR_NUMBER}\` to analyze what changed in the original PR
+          1) Use \`gh pr diff\` to analyze what changed in the original PR
           2) Determine which documentation directories are affected by the changes
           3) Assess if the changes are significant enough to update the llms.txt files (new content, major restructuring, new features, etc.)
           4) If changes are significant:
-             - Use run_terminal_cmd to create or update a persistent branch named \`${BRANCH_PREFIX}/pr-${PR_NUMBER}\`
-             - Use read_file to read existing llms.txt and llms-full.txt files
-             - Use search_replace or write to update the relevant llms.txt and llms-full.txt files
-             - Use run_terminal_cmd to push the changes to the branch
-             - Use run_terminal_cmd to comment on the original PR with a summary and a compare link
+             - Create or update a persistent branch named \`${{ env.BRANCH_PREFIX }}/pr-${{ github.event.pull_request.number }}\`
+             - Update the relevant llms.txt and llms-full.txt files to reflect the new documentation structure and content
+             - Push the changes to the branch
+             - Comment on the original PR with a summary and a compare link to create the PR
           5) If changes are not significant:
-             - Use run_terminal_cmd to comment on the original PR explaining that no llms.txt updates are needed
+             - Comment on the original PR explaining that no llms.txt updates are needed
 
           # File Format Guidelines:
           - llms.txt files should be concise, focused summaries with key links
@@ -129,7 +133,4 @@ jobs:
           - If updates needed: Pushed commits to the persistent branch and a PR comment with compare link
           - If no updates needed: A brief comment explaining why no updates are required
           - Keep all changes minimal and consistent with existing documentation style
-          - Keep the changes to the minimum necessary to update the llms.txt and llms-full.txt files
-          
-          CRITICAL: After completing ANY of the above actions (stop command, updates completed, or no updates needed), wait 30 seconds and then terminate the process. Do not continue running or use any more tools.
           " --force --model "$MODEL" --output-format=text
