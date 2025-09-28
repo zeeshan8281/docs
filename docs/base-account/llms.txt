@@ -13,8 +13,8 @@
 
 ## Guides
 - [Authenticate Users](https://docs.base.org/base-account/guides/authenticate-users.md) — SIWE with ERC‑6492 signatures
-- [Advanced Authentication Patterns](https://docs.base.org/base-account/guides/advanced-authentication.md) — MFA, TOTP, sessions, cross‑device sync
 - [Accept Payments](https://docs.base.org/base-account/guides/accept-payments.md) — One‑tap USDC payments with Base Pay
+- [Advanced Authentication Patterns](https://docs.base.org/base-account/guides/advanced-authentication.md) — MFA, sessions, TOTP, cross‑device sync
 
 ## Framework Integrations
 - [Wagmi: Setup](https://docs.base.org/base-account/framework-integrations/wagmi/setup.md) — Configure connectors and chains

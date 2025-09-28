@@ -7,7 +7,7 @@
 ## Use Cases
 - [Onboard Any User](https://docs.base.org/cookbook/onboard-any-user.md) — Reduce friction and improve conversion
 - [Accept Crypto Payments](https://docs.base.org/cookbook/accept-crypto-payments.md) — Add payments flows
-- [Build Cross-Chain Apps](https://docs.base.org/cookbook/build-cross-chain-apps.md) — Architecture, bridges, messaging, UX patterns
+- [Build Cross-Chain Applications](https://docs.base.org/cookbook/build-cross-chain-apps.md) — Architecture, bridges, messaging, UX patterns
 - [Launch AI Agents](https://docs.base.org/cookbook/launch-ai-agents.md) — Ship messaging agents
 - [Launch Tokens](https://docs.base.org/cookbook/launch-tokens.md) — Responsible token launch patterns
 - [Deploy a Chain](https://docs.base.org/cookbook/deploy-a-chain.md) — OP Stack deployment guide

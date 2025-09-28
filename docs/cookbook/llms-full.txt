@@ -14,7 +14,7 @@
 ### Use Cases
 - [Onboard Any User](https://docs.base.org/cookbook/onboard-any-user.md) — UX patterns to remove friction
 - [Accept Crypto Payments](https://docs.base.org/cookbook/accept-crypto-payments.md) — Payments flows
-- [Build Cross-Chain Apps](https://docs.base.org/cookbook/build-cross-chain-apps.md) — Hub-and-spoke, bridges, cross-chain messaging, unified UX
+- [Build Cross-Chain Applications](https://docs.base.org/cookbook/build-cross-chain-apps.md) — Multi‑chain patterns, bridging, messaging, monitoring
 - [Launch AI Agents](https://docs.base.org/cookbook/launch-ai-agents.md) — Agent patterns and tooling
 - [Launch Tokens](https://docs.base.org/cookbook/launch-tokens.md) — Responsible token launch
 - [Deploy a Chain](https://docs.base.org/cookbook/deploy-a-chain.md) — OP Stack deployment
