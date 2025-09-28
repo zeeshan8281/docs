@@ -66,8 +66,7 @@ jobs:
           HEAD_REF="${{ github.head_ref }}"
           BRANCH_PREFIX="${{ env.BRANCH_PREFIX }}"
           
-          # Run cursor-agent and capture output
-          AGENT_OUTPUT=$(cursor-agent -p "You are operating in a GitHub Actions runner to automatically update llms.txt and llms-full.txt files.
+          cursor-agent -p "You are operating in a GitHub Actions runner to automatically update llms.txt and llms-full.txt files.
 
           The GitHub CLI is available as \`gh\` and authenticated via \`GH_TOKEN\`. Git is available. You have write access to repository contents and can comment on pull requests, but you must not create or edit PRs directly.
 
