@@ -131,7 +131,7 @@ jobs:
           - Keep all changes minimal and consistent with existing documentation style
           - Keep the changes to the minimum necessary to update the llms.txt and llms-full.txt files
           
-          CRITICAL: After completing ANY of the above actions (stop command, updates completed, or no updates needed), you MUST immediately exit by running 'exit 0'. Do not continue running or wait for additional input.
+          CRITICAL: After completing ANY of the above actions (stop command, updates completed, or no updates needed), you MUST immediately use the run_terminal_cmd tool to execute 'exit 0'. This will terminate the process. Do not continue running or wait for additional input.
           " --force --model "$MODEL" --output-format=json)
           
           # Parse the JSON response
