@@ -58,22 +58,30 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BRANCH_PREFIX: auto-llms
         run: |
+          # Expand variables for the agent
+          REPO="${{ github.repository }}"
+          OWNER="${{ github.repository_owner }}"
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          BASE_REF="${{ github.base_ref }}"
+          HEAD_REF="${{ github.head_ref }}"
+          BRANCH_PREFIX="${{ env.BRANCH_PREFIX }}"
+          
           cursor-agent -p "You are operating in a GitHub Actions runner to automatically update llms.txt and llms-full.txt files.
 
           The GitHub CLI is available as \`gh\` and authenticated via \`GH_TOKEN\`. Git is available. You have write access to repository contents and can comment on pull requests, but you must not create or edit PRs directly.
 
           IMPORTANT: Before starting your analysis, check if the user wants to stop by running:
-          gh pr view ${{ github.event.pull_request.number }} --json comments --jq '.comments[] | select(.body | contains(\"stop\"))'
+          gh pr view ${PR_NUMBER} --json comments --jq '.comments[] | select(.body | contains(\"stop\"))'
           
           If this returns any results, immediately post a cancellation comment and exit. Otherwise, proceed with your analysis.
 
           # Context:
-          - Repo: ${{ github.repository }}
-          - Owner: ${{ github.repository_owner }}
-          - PR Number: ${{ github.event.pull_request.number }}
-          - Base Ref: ${{ github.base_ref }}
-          - Head Ref: ${{ github.head_ref }}
-          - Branch Prefix: ${{ env.BRANCH_PREFIX }}
+          - Repo: ${REPO}
+          - Owner: ${OWNER}
+          - PR Number: ${PR_NUMBER}
+          - Base Ref: ${BASE_REF}
+          - Head Ref: ${HEAD_REF}
+          - Branch Prefix: ${BRANCH_PREFIX}
 
           # Documentation Structure:
           This is a docs repository with the following main directories that each contain llms.txt and llms-full.txt files:
@@ -94,7 +102,7 @@ jobs:
           2) Determine which documentation directories are affected by the changes
           3) Assess if the changes are significant enough to update the llms.txt files (new content, major restructuring, new features, etc.)
           4) If changes are significant:
-             - Create or update a persistent branch named \`${{ env.BRANCH_PREFIX }}/pr-${{ github.event.pull_request.number }}\`
+             - Create or update a persistent branch named \`${BRANCH_PREFIX}/pr-${PR_NUMBER}\`
              - Update the relevant llms.txt and llms-full.txt files to reflect the new documentation structure and content
              - Push the changes to the branch
              - Comment on the original PR with a summary and a compare link to create the PR
@@ -122,4 +130,4 @@ jobs:
           - Keep all changes minimal and consistent with existing documentation style
           
           CRITICAL: After completing ANY of the above actions (stop command, updates completed, or no updates needed), you MUST immediately exit by running 'exit 0'. Do not continue running or wait for additional input.
-          " --force --model "$MODEL" --output-format=text
+          " --force --model "$MODEL" --output-format=json
