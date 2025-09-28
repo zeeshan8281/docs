@@ -85,9 +85,10 @@ jobs:
 
           The GitHub CLI is available as \`gh\` and authenticated via \`GH_TOKEN\`. Git is available. You have write access to repository contents and can comment on pull requests, but you must not create or edit PRs directly.
 
-          IMPORTANT: Check for stop commands by running this periodically during your analysis:
-          \`gh pr view ${{ github.event.pull_request.number }} --json comments --jq '.comments[] | select(.body | contains(\"stop\"))'\`
-          If any comment contains 'stop', immediately exit with a cancellation message.
+          IMPORTANT: Before starting your analysis, check if the user wants to stop by running:
+          gh pr view ${{ github.event.pull_request.number }} --json comments --jq '.comments[] | select(.body | contains(\"stop\"))'
+          
+          If this returns any results, immediately post a cancellation comment and exit. Otherwise, proceed with your analysis.
 
           # Context:
           - Repo: ${{ github.repository }}
@@ -142,4 +143,6 @@ jobs:
           - If updates needed: Pushed commits to the persistent branch and a PR comment with compare link
           - If no updates needed: A brief comment explaining why no updates are required
           - Keep all changes minimal and consistent with existing documentation style
+          
+          CRITICAL: After completing ANY of the above actions (stop command, updates completed, or no updates needed), you MUST immediately exit by running 'exit 0'. Do not continue running or wait for additional input.
           " --force --model "$MODEL" --output-format=text
