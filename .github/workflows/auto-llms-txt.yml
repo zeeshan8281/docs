@@ -70,10 +70,10 @@ jobs:
 
           The GitHub CLI is available as \`gh\` and authenticated via \`GH_TOKEN\`. Git is available. You have write access to repository contents and can comment on pull requests, but you must not create or edit PRs directly.
 
-          IMPORTANT: Before starting your analysis, check if the user wants to stop by running:
+          IMPORTANT: Before starting your analysis, use the run_terminal_cmd tool to execute:
           gh pr view ${PR_NUMBER} --json comments --jq '.comments[] | select(.body | contains(\"stop\"))'
           
-          If this returns any results, immediately post a cancellation comment and exit. Otherwise, proceed with your analysis.
+          If this command returns any results, use run_terminal_cmd to post a cancellation comment on the PR and then use run_terminal_cmd to execute 'exit 0'. Otherwise, proceed with your analysis.
 
           # Context:
           - Repo: ${REPO}
