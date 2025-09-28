@@ -112,11 +112,6 @@ jobs:
         run: |
           if [ "${{ steps.agent_run.outcome }}" == "failure" ]; then
             echo "⏰ Agent timed out after 20 minutes - this is expected for long-running analysis"
-            gh pr comment ${{ github.event.pull_request.number }} --body "⏰ **LLMs.txt Auto-Update Timeout**
-            
-            The automated analysis timed out after 20 minutes. This can happen with large documentation changes. The process has been stopped safely." || true
           else
             echo "✅ Agent completed successfully"
           fi
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
