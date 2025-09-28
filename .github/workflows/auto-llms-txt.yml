@@ -40,14 +40,13 @@ jobs:
 
       - name: Post initial comment
         run: |
-          COMMENT_ID=$(gh pr comment ${{ github.event.pull_request.number }} --body "🤖 **LLMs.txt Auto-Update**
+          gh pr comment ${{ github.event.pull_request.number }} --body "🤖 **LLMs.txt Auto-Update**
 
           Analyzing documentation changes to update llms.txt files...
 
           💡 **Want to stop this process?** Comment \`stop\` below and I'll cancel the analysis.
 
-          ⏱️ This will timeout after 30 minutes." --json id --jq '.id')
-          echo "COMMENT_ID=$COMMENT_ID" >> $GITHUB_ENV
+          ⏱️ This will timeout after 30 minutes."
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -61,7 +60,7 @@ jobs:
         run: |
           # Check for stop command every 30 seconds
           check_stop() {
-            if gh pr view ${{ github.event.pull_request.number }} --json comments --jq '.comments[] | select(.author.login == "github-actions[bot]" and (.body | contains("stop")))' | grep -q stop; then
+            if gh pr view ${{ github.event.pull_request.number }} --json comments --jq -r '.comments[] | select(.body | contains("stop")) | .body' | grep -q stop; then
               gh pr comment ${{ github.event.pull_request.number }} --body "⏹️ **Analysis Stopped**
               
               LLMs.txt analysis cancelled per user request."
