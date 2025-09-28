@@ -39,7 +39,7 @@ jobs:
           git config user.email "cursoragent@cursor.com"
 
       - name: Update LLMs.txt files
-        timeout-minutes: 1
+        timeout-minutes: 20
         continue-on-error: true
         id: agent_run
         env:
