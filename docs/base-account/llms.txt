@@ -13,6 +13,7 @@
 
 ## Guides
 - [Authenticate Users](https://docs.base.org/base-account/guides/authenticate-users.md) — SIWE with ERC‑6492 signatures
+- [Advanced Authentication Patterns](https://docs.base.org/base-account/guides/advanced-authentication.md) — MFA, TOTP, sessions, cross‑device sync
 - [Accept Payments](https://docs.base.org/base-account/guides/accept-payments.md) — One‑tap USDC payments with Base Pay
 
 ## Framework Integrations

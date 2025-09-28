@@ -32,6 +32,7 @@ const { status } = await getPaymentStatus({ id })
 
 ### Guides
 - [Authenticate Users](https://docs.base.org/base-account/guides/authenticate-users.md) — SIWE + ERC‑6492
+- [Advanced Authentication Patterns](https://docs.base.org/base-account/guides/advanced-authentication.md) — MFA, TOTP, sessions, cross‑device sync
 - [Accept Payments](https://docs.base.org/base-account/guides/accept-payments.md) — Base Pay
 - [Batch Transactions](https://docs.base.org/base-account/improve-ux/batch-transactions.md) — Multi‑call
 - [Paymasters](https://docs.base.org/base-account/improve-ux/sponsor-gas/paymasters.md) — Sponsor gas
