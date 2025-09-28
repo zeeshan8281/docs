@@ -38,16 +38,57 @@ jobs:
           git config user.name "Cursor Agent"
           git config user.email "cursoragent@cursor.com"
 
+      - name: Post initial comment
+        run: |
+          COMMENT_ID=$(gh pr comment ${{ github.event.pull_request.number }} --body "🤖 **LLMs.txt Auto-Update**
+
+          Analyzing documentation changes to update llms.txt files...
+
+          💡 **Want to stop this process?** Comment \`stop\` below and I'll cancel the analysis.
+
+          ⏱️ This will timeout after 30 minutes." --json id --jq '.id')
+          echo "COMMENT_ID=$COMMENT_ID" >> $GITHUB_ENV
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Update LLMs.txt files
+        timeout-minutes: 30
         env:
           MODEL: gpt-5
           CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BRANCH_PREFIX: auto-llms
         run: |
+          # Check for stop command every 30 seconds
+          check_stop() {
+            if gh pr view ${{ github.event.pull_request.number }} --json comments --jq '.comments[] | select(.author.login == "github-actions[bot]" and (.body | contains("stop")))' | grep -q stop; then
+              gh pr comment ${{ github.event.pull_request.number }} --body "⏹️ **Analysis Stopped**
+              
+              LLMs.txt analysis cancelled per user request."
+              exit 0
+            fi
+          }
+
+          # Run stop check in background
+          while true; do
+            sleep 30
+            check_stop
+          done &
+          STOP_PID=$!
+
+          # Cleanup function
+          cleanup() {
+            kill $STOP_PID 2>/dev/null || true
+          }
+          trap cleanup EXIT
+
           cursor-agent -p "You are operating in a GitHub Actions runner to automatically update llms.txt and llms-full.txt files.
 
           The GitHub CLI is available as \`gh\` and authenticated via \`GH_TOKEN\`. Git is available. You have write access to repository contents and can comment on pull requests, but you must not create or edit PRs directly.
+
+          IMPORTANT: Check for stop commands by running this periodically during your analysis:
+          \`gh pr view ${{ github.event.pull_request.number }} --json comments --jq '.comments[] | select(.body | contains(\"stop\"))'\`
+          If any comment contains 'stop', immediately exit with a cancellation message.
 
           # Context:
           - Repo: ${{ github.repository }}
