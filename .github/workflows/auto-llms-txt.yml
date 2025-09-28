@@ -1,0 +1,105 @@
+name: Auto Update LLMs.txt Files
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - 'docs/base-account/**'
+      - 'docs/base-app/**'
+      - 'docs/base-chain/**'
+      - 'docs/cookbook/**'
+      - 'docs/get-started/**'
+      - 'docs/learn/**'
+      - 'docs/mini-apps/**'
+      - 'docs/onchainkit/**'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-llms-txt:
+    if: ${{ !startsWith(github.head_ref, 'auto-llms/') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install Cursor CLI
+        run: |
+          curl https://cursor.com/install -fsS | bash
+          echo "$HOME/.cursor/bin" >> $GITHUB_PATH
+
+      - name: Configure git
+        run: |
+          git config user.name "Cursor Agent"
+          git config user.email "cursoragent@cursor.com"
+
+      - name: Update LLMs.txt files
+        env:
+          MODEL: gpt-5
+          CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH_PREFIX: auto-llms
+        run: |
+          cursor-agent -p "You are operating in a GitHub Actions runner to automatically update llms.txt and llms-full.txt files.
+
+          The GitHub CLI is available as \`gh\` and authenticated via \`GH_TOKEN\`. Git is available. You have write access to repository contents and can comment on pull requests, but you must not create or edit PRs directly.
+
+          # Context:
+          - Repo: ${{ github.repository }}
+          - Owner: ${{ github.repository_owner }}
+          - PR Number: ${{ github.event.pull_request.number }}
+          - Base Ref: ${{ github.base_ref }}
+          - Head Ref: ${{ github.head_ref }}
+          - Branch Prefix: ${{ env.BRANCH_PREFIX }}
+
+          # Documentation Structure:
+          This is a docs repository with the following main directories that each contain llms.txt and llms-full.txt files:
+          - docs/base-account/
+          - docs/base-app/
+          - docs/base-chain/
+          - docs/cookbook/
+          - docs/get-started/
+          - docs/learn/
+          - docs/mini-apps/
+          - docs/onchainkit/
+
+          # Goal:
+          Analyze changes in the original PR and determine if they are significant enough to warrant updating the llms.txt and llms-full.txt files for the affected directories. If so, create a separate PR with the updates.
+
+          # Requirements:
+          1) Use \`gh pr diff\` to analyze what changed in the original PR
+          2) Determine which documentation directories are affected by the changes
+          3) Assess if the changes are significant enough to update the llms.txt files (new content, major restructuring, new features, etc.)
+          4) If changes are significant:
+             - Create or update a persistent branch named \`${{ env.BRANCH_PREFIX }}/pr-${{ github.event.pull_request.number }}\`
+             - Update the relevant llms.txt and llms-full.txt files to reflect the new documentation structure and content
+             - Push the changes to the branch
+             - Comment on the original PR with a summary and a compare link to create the PR
+          5) If changes are not significant:
+             - Comment on the original PR explaining that no llms.txt updates are needed
+
+          # File Format Guidelines:
+          - llms.txt files should be concise, focused summaries with key links
+          - llms-full.txt files should be comprehensive with all documentation links
+          - Follow the existing format and style of the current files
+          - Include proper section headers and descriptions
+          - Use relative links in the format: https://docs.base.org/[path]
+
+          # Significance Criteria:
+          Consider changes significant if they involve:
+          - New documentation files or sections
+          - Major content restructuring
+          - New features or API endpoints
+          - Changes to core concepts or workflows
+          - New guides or tutorials
+
+          # Deliverables:
+          - If updates needed: Pushed commits to the persistent branch and a PR comment with compare link
+          - If no updates needed: A brief comment explaining why no updates are required
+          - Keep all changes minimal and consistent with existing documentation style
+          " --force --model "$MODEL" --output-format=text
