@@ -129,6 +129,7 @@ jobs:
           - If updates needed: Pushed commits to the persistent branch and a PR comment with compare link
           - If no updates needed: A brief comment explaining why no updates are required
           - Keep all changes minimal and consistent with existing documentation style
+          - Keep the changes to the minimum necessary to update the llms.txt and llms-full.txt files
           
           CRITICAL: After completing ANY of the above actions (stop command, updates completed, or no updates needed), you MUST immediately exit by running 'exit 0'. Do not continue running or wait for additional input.
           " --force --model "$MODEL" --output-format=json)
