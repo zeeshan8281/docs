@@ -131,24 +131,4 @@ jobs:
           - Keep the changes to the minimum necessary to update the llms.txt and llms-full.txt files
           
           CRITICAL: After completing ANY of the above actions (stop command, updates completed, or no updates needed), you MUST immediately use the run_terminal_cmd tool to execute 'exit 0'. This will terminate the process. Do not continue running or wait for additional input.
-          " --force --model "$MODEL" --output-format=json)
-          
-          # Parse the JSON response
-          echo "Agent output: $AGENT_OUTPUT"
-          
-          # Check if the agent completed successfully
-          if echo "$AGENT_OUTPUT" | jq -e '.type == "result" and .subtype == "success"' > /dev/null; then
-            echo "✅ Agent completed successfully"
-            
-            # Extract the result message
-            RESULT_MESSAGE=$(echo "$AGENT_OUTPUT" | jq -r '.result')
-            echo "Result: $RESULT_MESSAGE"
-            
-            # Force exit the action
-            echo "🏁 Forcing action to exit"
-            exit 0
-          else
-            echo "❌ Agent did not complete successfully"
-            echo "Raw output: $AGENT_OUTPUT"
-            exit 1
-          fi
+          " --force --model "$MODEL" --output-format=text
