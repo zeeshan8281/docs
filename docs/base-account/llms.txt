@@ -5,36 +5,75 @@
 > Base Account is a passkey-secured, ERC-4337 smart wallet with one‑tap payments, spend permissions, and sub‑accounts—built for seamless multi‑chain apps.
 
 ## Introduction
-- [What is Base Account?](https://docs.base.org/base-account/overview/what-is-base-account.md) — Core concepts and benefits
+- [What is Base Account?](https://docs.base.org/base-account/overview/what-is-base-account) — Core concepts and benefits of Base Account smart wallets
 
 ## Quickstart
-- [Web (Next.js)](https://docs.base.org/base-account/quickstart/web.md) — Add Base Account to a web app
-- [React Native Integration](https://docs.base.org/base-account/quickstart/mobile-integration.md) — Mobile setup and flows
+- [Web (HTML + JS)](https://docs.base.org/base-account/quickstart/web) — Add Base Account to any web page with minimal code
+- [Mobile (React Native)](https://docs.base.org/base-account/quickstart/mobile-integration) — Mobile integration using Mobile Wallet Protocol Client
 
 ## Guides
-- [Authenticate Users](https://docs.base.org/base-account/guides/authenticate-users.md) — SIWE with ERC‑6492 signatures
-- [Accept Payments](https://docs.base.org/base-account/guides/accept-payments.md) — One‑tap USDC payments with Base Pay
+- [Authenticate Users](https://docs.base.org/base-account/guides/authenticate-users) — SIWE authentication with ERC‑6492 signatures and backend verification
+- [Accept Payments](https://docs.base.org/base-account/guides/accept-payments) — One‑tap USDC payments with Base Pay and user info collection
 
 ## Framework Integrations
-- [Wagmi: Setup](https://docs.base.org/base-account/framework-integrations/wagmi/setup.md) — Configure connectors and chains
-- [Privy: Setup](https://docs.base.org/base-account/framework-integrations/privy/setup.md) — Authentication + sub‑accounts
+- [Wagmi: Setup](https://docs.base.org/base-account/framework-integrations/wagmi/setup) — Configure Wagmi with Base Account connector
+- [Privy: Setup](https://docs.base.org/base-account/framework-integrations/privy/setup) — Authentication with embedded wallets and sub‑accounts
 
 ## Reference
-- [Account SDK: createBaseAccount](https://docs.base.org/base-account/reference/core/createBaseAccount.md) — Initialize SDK and provider
-- [Provider RPC: wallet_sendCalls](https://docs.base.org/base-account/reference/core/provider-rpc-methods/wallet_sendCalls.md) — Batch and sponsored calls
-
-## More
-- [Troubleshooting: Popups](https://docs.base.org/base-account/more/troubleshooting/usage-details/popups.md) — Browser settings and flows
-- [Troubleshooting: Gas Usage](https://docs.base.org/base-account/more/troubleshooting/usage-details/gas-usage.md) — Cost breakdown and tips
+- [SDK: createBaseAccountSDK](https://docs.base.org/base-account/reference/core/createBaseAccount) — Initialize SDK with EIP-1193 provider and sub-account management
+- [RPC: wallet_sendCalls](https://docs.base.org/base-account/reference/core/provider-rpc-methods/wallet_sendCalls) — Batch transactions with EIP-5792 standard
+- [UI: Sign In With Base Button](https://docs.base.org/base-account/reference/ui-elements/sign-in-with-base-button) — Pre-built authentication component
+- [UI: Base Pay Button](https://docs.base.org/base-account/reference/ui-elements/base-pay-button) — Pre-built payment component
+- [Brand Guidelines](https://docs.base.org/base-account/reference/ui-elements/brand-guidelines) — Design standards for Base Account UI elements
 
 ## Basenames
-- [Basenames FAQ](https://docs.base.org/base-account/basenames/basenames-faq.md) — Naming, transfer, and primary name setup
+- [Basenames FAQ](https://docs.base.org/base-account/basenames/basenames-faq) — Human-readable names, registration, transfer, and primary name setup
 
-## Contribute
-- [Contribute to Docs](https://docs.base.org/base-account/contribute/contribute-to-base-account-docs.md) — How to propose changes and fixes
+## Troubleshooting
+- [Popup Issues](https://docs.base.org/base-account/more/troubleshooting/usage-details/popups) — Browser popup blockers and wallet flows
+- [Gas Usage](https://docs.base.org/base-account/more/troubleshooting/usage-details/gas-usage) — Transaction costs and optimization tips
 
-## Optional
-- [Base Gasless Campaign](https://docs.base.org/base-account/more/base-gasless-campaign.md) — Incentives for sponsored gas integrations
-- [Telemetry](https://docs.base.org/base-account/more/telemetry.md) — Anonymous metrics and privacy details
+## Additional Resources
+- [Base Gasless Campaign](https://docs.base.org/base-account/more/base-gasless-campaign) — Incentives for sponsored gas integrations
+- [Telemetry](https://docs.base.org/base-account/more/telemetry) — Anonymous metrics collection and privacy details
+- [Contribute to Docs](https://docs.base.org/base-account/contribute/contribute-to-base-account-docs) — How to propose documentation changes
+
+## Key Features
+- **Universal Sign-On**: One passkey works across all Base-enabled apps
+- **One-Tap Payments**: Low-friction USDC payments with automatic gas sponsorship
+- **Multi-Chain Support**: Works across 9 EVM networks including Base, Arbitrum, Optimism, Polygon
+- **Sub-Accounts**: Create and manage sub-accounts with spend permissions
+- **ERC-4337 Smart Wallet**: Built on account abstraction standards
+- **ERC-6492 Signatures**: Verify signatures before wallet deployment
+- **Gasless Transactions**: Sponsored transactions for better UX
+
+## Supported Networks
+- **Mainnet**: Base • Arbitrum • Optimism • Zora • Polygon • BNB • Avalanche • Lordchain • Ethereum
+- **Testnet**: Sepolia • Base Sepolia
+
+## SDK Installation
+```bash
+npm install @base-org/account
+# or via CDN
+<script src="https://unpkg.com/@base-org/account/dist/base-account.min.js"></script>
+```
+
+## Quick Integration Examples
+```typescript
+// Basic SDK setup
+import { createBaseAccountSDK } from '@base-org/account';
+const sdk = createBaseAccountSDK({ appName: 'My App' });
+const provider = sdk.getProvider();
+
+// One-tap payment
+import { pay } from '@base-org/account';
+const payment = await pay({ amount: '5.00', to: '0xRecipient' });
+
+// Authentication with wallet_connect
+const { accounts } = await provider.request({
+  method: 'wallet_connect',
+  params: [{ version: '1', capabilities: { signInWithEthereum: { nonce, chainId: '0x2105' } } }]
+});
+```
 
 
