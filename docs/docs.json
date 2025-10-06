@@ -1503,10 +1503,6 @@
   
   "redirects": [
     {
-      "source": "/mini-apps/quickstart/launch-checklis",
-      "destination": "/cookbook/minikit/test-and-deploy.mdx"
-    },
-    {
       "source": "/mini-apps/overview",
       "destination": "/mini-apps/quickstart/create-new-miniapp"
     },
