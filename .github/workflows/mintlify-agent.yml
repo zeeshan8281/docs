@@ -1,0 +1,232 @@
+name: Mintlify Agent Documentation Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'docs/**/*.mdx'
+      - 'docs/**/*.md'
+      - 'docs/**/llms.txt'
+      - 'docs/**/llms-full.txt'
+
+jobs:
+  mintlify-agent-review:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v44
+        with:
+          files: |
+            docs/**/*.mdx
+            docs/**/*.md
+            docs/**/llms.txt
+            docs/**/llms-full.txt
+
+      - name: Determine affected sections
+        id: sections
+        run: |
+          echo "Changed files: ${{ steps.changed-files.outputs.all_changed_files }}"
+          
+          # Initialize sections array
+          sections=()
+          
+          # Check each changed file and determine which section it belongs to
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            if [[ $file == docs/base-account/* ]]; then
+              sections+=("base-account")
+            elif [[ $file == docs/base-app/* ]]; then
+              sections+=("base-app")
+            elif [[ $file == docs/base-chain/* ]]; then
+              sections+=("base-chain")
+            elif [[ $file == docs/cookbook/* ]]; then
+              sections+=("cookbook")
+            elif [[ $file == docs/get-started/* ]]; then
+              sections+=("get-started")
+            elif [[ $file == docs/learn/* ]]; then
+              sections+=("learn")
+            elif [[ $file == docs/mini-apps/* ]]; then
+              sections+=("mini-apps")
+            elif [[ $file == docs/onchainkit/* ]]; then
+              sections+=("onchainkit")
+            else
+              sections+=("general")
+            fi
+          done
+          
+          # Remove duplicates and create comma-separated list
+          unique_sections=($(printf "%s\n" "${sections[@]}" | sort -u))
+          sections_list=$(IFS=,; echo "${unique_sections[*]}")
+          
+          echo "sections=${sections_list}" >> $GITHUB_OUTPUT
+          echo "Affected sections: ${sections_list}"
+
+      - name: Create branch name
+        id: branch
+        run: |
+          # Create a unique branch name for the agent
+          timestamp=$(date +%s)
+          branch_name="mintlify-agent-review-pr-${{ github.event.number }}-${timestamp}"
+          echo "branch_name=${branch_name}" >> $GITHUB_OUTPUT
+
+      - name: Call Mintlify Agent API
+        id: agent-call
+        run: |
+          # Prepare the PR context message
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          PR_BODY="${{ github.event.pull_request.body }}"
+          PR_URL="${{ github.event.pull_request.html_url }}"
+          CHANGED_FILES="${{ steps.changed-files.outputs.all_changed_files }}"
+          SECTIONS="${{ steps.sections.outputs.sections }}"
+          
+          # Create the message content
+          MESSAGE_CONTENT="Review and improve the documentation changes in this PR: ${PR_URL}
+
+          PR Title: ${PR_TITLE}
+          
+          PR Description: ${PR_BODY}
+          
+          Changed files: ${CHANGED_FILES}
+          
+          Affected documentation sections: ${SECTIONS}
+          
+          Please review the changes and:
+          1. Check for technical accuracy and completeness
+          2. Ensure consistency with existing documentation style
+          3. Verify that code examples are correct and up-to-date
+          4. Update any related llms.txt files if necessary
+          5. Fix any typos, grammar issues, or formatting problems
+          6. Ensure proper cross-references and links are maintained
+          7. Validate that the changes align with the overall documentation structure
+          
+          Focus particularly on the sections: ${SECTIONS}"
+          
+          # Prepare the JSON payload
+          cat > payload.json << EOF
+          {
+            "branch": "${{ steps.branch.outputs.branch_name }}",
+            "messages": [
+              {
+                "role": "system",
+                "content": "You are a technical documentation expert helping to review and improve Base documentation. Focus on accuracy, clarity, and consistency with existing documentation patterns."
+              },
+              {
+                "role": "user",
+                "content": "${MESSAGE_CONTENT}"
+              }
+            ]
+          }
+          EOF
+          
+          echo "Calling Mintlify Agent API..."
+          echo "Project ID: ${{ secrets.MINTLIFY_PROJECT_ID }}"
+          echo "Branch: ${{ steps.branch.outputs.branch_name }}"
+          
+          # Call the Mintlify Agent API
+          response=$(curl -X POST \
+            "https://api.mintlify.com/v1/agent/${{ secrets.MINTLIFY_PROJECT_ID }}/job" \
+            -H "Authorization: Bearer ${{ secrets.MINTLIFY_API_ADMIN_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d @payload.json \
+            -w "HTTPSTATUS:%{http_code}" \
+            -s)
+          
+          # Extract HTTP status and response body
+          http_status=$(echo $response | grep -o "HTTPSTATUS:[0-9]*" | cut -d: -f2)
+          response_body=$(echo $response | sed -E 's/HTTPSTATUS:[0-9]*$//')
+          
+          echo "HTTP Status: ${http_status}"
+          echo "Response: ${response_body}"
+          
+          if [ "$http_status" -eq 200 ]; then
+            echo "✅ Mintlify Agent API call successful"
+            echo "agent_success=true" >> $GITHUB_OUTPUT
+            echo "session_id=$(echo "$response" | grep -o 'X-Session-Id: [^[:space:]]*' | cut -d' ' -f2)" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Mintlify Agent API call failed with status: ${http_status}"
+            echo "Response: ${response_body}"
+            echo "agent_success=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+      - name: Wait for agent completion
+        if: steps.agent-call.outputs.agent_success == 'true'
+        run: |
+          echo "⏳ Waiting for Mintlify Agent to complete the review..."
+          echo "This may take a few minutes depending on the complexity of the changes."
+          
+          # Wait for a reasonable amount of time for the agent to process
+          # The agent works asynchronously, so we'll wait and then check if a branch was created
+          sleep 30
+          
+          echo "✅ Agent job submitted successfully!"
+          echo "Branch created: ${{ steps.branch.outputs.branch_name }}"
+          echo "You can monitor the progress in your Mintlify dashboard."
+
+      - name: Comment on PR
+        if: steps.agent-call.outputs.agent_success == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const branchName = '${{ steps.branch.outputs.branch_name }}';
+            const sections = '${{ steps.sections.outputs.sections }}';
+            
+            const comment = `## 🤖 Mintlify Agent Documentation Review
+            
+            I've initiated a documentation review using the Mintlify Agent for this PR.
+            
+            **Affected sections:** ${sections}
+            **Review branch:** \`${branchName}\`
+            
+            The agent is analyzing the changes and will create a pull request with suggested improvements if any issues are found. This includes:
+            
+            - ✅ Technical accuracy verification
+            - ✅ Style and formatting consistency
+            - ✅ Code example validation
+            - ✅ Cross-reference and link verification
+            - ✅ Grammar and typo corrections
+            - ✅ llms.txt updates if needed
+            
+            You can monitor the progress in your [Mintlify dashboard](https://dashboard.mintlify.com).
+            
+            *This review was automatically triggered by changes to documentation files.*`;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+      - name: Handle API failure
+        if: steps.agent-call.outputs.agent_success == 'false'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const comment = `## ❌ Mintlify Agent Review Failed
+            
+            The automated documentation review could not be completed due to an API error.
+            
+            Please check:
+            - Mintlify API credentials are correctly configured
+            - Project ID is valid
+            - API rate limits haven't been exceeded
+            
+            You may need to manually review the documentation changes or retry the workflow.`;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+            
+            core.setFailed('Mintlify Agent API call failed');

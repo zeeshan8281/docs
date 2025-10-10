@@ -1,0 +1,388 @@
+name: Advanced Mintlify Agent Documentation Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'docs/**/*.mdx'
+      - 'docs/**/*.md'
+      - 'docs/**/llms.txt'
+      - 'docs/**/llms-full.txt'
+      - 'docs/docs.json'
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number to review'
+        required: true
+        type: number
+      custom_prompt:
+        description: 'Custom prompt for the agent'
+        required: false
+        type: string
+
+jobs:
+  mintlify-agent-review:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false || github.event_name == 'workflow_dispatch'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Get PR information
+        id: pr-info
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            # Get PR info from API for manual trigger
+            PR_NUMBER="${{ github.event.inputs.pr_number }}"
+            PR_DATA=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              "https://api.github.com/repos/${{ github.repository }}/pulls/${PR_NUMBER}")
+            
+            echo "pr_number=${PR_NUMBER}" >> $GITHUB_OUTPUT
+            echo "pr_title=$(echo "$PR_DATA" | jq -r '.title')" >> $GITHUB_OUTPUT
+            echo "pr_body=$(echo "$PR_DATA" | jq -r '.body // ""')" >> $GITHUB_OUTPUT
+            echo "pr_url=$(echo "$PR_DATA" | jq -r '.html_url')" >> $GITHUB_OUTPUT
+            echo "head_sha=$(echo "$PR_DATA" | jq -r '.head.sha')" >> $GITHUB_OUTPUT
+            echo "base_sha=$(echo "$PR_DATA" | jq -r '.base.sha')" >> $GITHUB_OUTPUT
+          else
+            # Use event data for automatic trigger
+            echo "pr_number=${{ github.event.number }}" >> $GITHUB_OUTPUT
+            echo "pr_title=${{ github.event.pull_request.title }}" >> $GITHUB_OUTPUT
+            echo "pr_body=${{ github.event.pull_request.body }}" >> $GITHUB_OUTPUT
+            echo "pr_url=${{ github.event.pull_request.html_url }}" >> $GITHUB_OUTPUT
+            echo "head_sha=${{ github.event.pull_request.head.sha }}" >> $GITHUB_OUTPUT
+            echo "base_sha=${{ github.event.pull_request.base.sha }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Get changed files
+        id: changed-files
+        run: |
+          # Get the diff between base and head
+          git diff --name-only ${{ steps.pr-info.outputs.base_sha }}..${{ steps.pr-info.outputs.head_sha }} > changed_files.txt
+          
+          # Filter for documentation files
+          grep -E '\.(mdx?|txt)$' changed_files.txt | grep '^docs/' > doc_files.txt || true
+          
+          if [ -s doc_files.txt ]; then
+            CHANGED_FILES=$(cat doc_files.txt | tr '\n' ' ')
+            echo "changed_files=${CHANGED_FILES}" >> $GITHUB_OUTPUT
+            echo "has_doc_changes=true" >> $GITHUB_OUTPUT
+            echo "Changed documentation files: ${CHANGED_FILES}"
+          else
+            echo "has_doc_changes=false" >> $GITHUB_OUTPUT
+            echo "No documentation files changed"
+          fi
+
+      - name: Analyze documentation structure
+        id: analyze
+        if: steps.changed-files.outputs.has_doc_changes == 'true'
+        run: |
+          # Create a comprehensive analysis of the changes
+          cat > analyze_changes.js << 'EOF'
+          const fs = require('fs');
+          const path = require('path');
+          
+          const changedFiles = process.env.CHANGED_FILES.split(' ').filter(f => f.trim());
+          const analysis = {
+            sections: new Set(),
+            fileTypes: new Set(),
+            hasLlmsChanges: false,
+            hasConfigChanges: false,
+            affectedFeatures: new Set()
+          };
+          
+          changedFiles.forEach(file => {
+            // Determine section
+            const parts = file.split('/');
+            if (parts.length > 1) {
+              analysis.sections.add(parts[1]); // docs/section-name/...
+            }
+            
+            // Determine file type
+            const ext = path.extname(file);
+            analysis.fileTypes.add(ext);
+            
+            // Check for special files
+            if (file.includes('llms')) {
+              analysis.hasLlmsChanges = true;
+            }
+            if (file.includes('docs.json')) {
+              analysis.hasConfigChanges = true;
+            }
+            
+            // Detect features from file paths
+            if (file.includes('quickstart')) analysis.affectedFeatures.add('quickstart');
+            if (file.includes('guide')) analysis.affectedFeatures.add('guides');
+            if (file.includes('reference')) analysis.affectedFeatures.add('api-reference');
+            if (file.includes('tutorial')) analysis.affectedFeatures.add('tutorials');
+          });
+          
+          console.log('SECTIONS=' + Array.from(analysis.sections).join(','));
+          console.log('FILE_TYPES=' + Array.from(analysis.fileTypes).join(','));
+          console.log('HAS_LLMS_CHANGES=' + analysis.hasLlmsChanges);
+          console.log('HAS_CONFIG_CHANGES=' + analysis.hasConfigChanges);
+          console.log('AFFECTED_FEATURES=' + Array.from(analysis.affectedFeatures).join(','));
+          EOF
+          
+          CHANGED_FILES="${{ steps.changed-files.outputs.changed_files }}" node analyze_changes.js > analysis_output.txt
+          
+          # Parse the output
+          while IFS= read -r line; do
+            if [[ $line == SECTIONS=* ]]; then
+              echo "sections=${line#SECTIONS=}" >> $GITHUB_OUTPUT
+            elif [[ $line == FILE_TYPES=* ]]; then
+              echo "file_types=${line#FILE_TYPES=}" >> $GITHUB_OUTPUT
+            elif [[ $line == HAS_LLMS_CHANGES=* ]]; then
+              echo "has_llms_changes=${line#HAS_LLMS_CHANGES=}" >> $GITHUB_OUTPUT
+            elif [[ $line == HAS_CONFIG_CHANGES=* ]]; then
+              echo "has_config_changes=${line#HAS_CONFIG_CHANGES=}" >> $GITHUB_OUTPUT
+            elif [[ $line == AFFECTED_FEATURES=* ]]; then
+              echo "affected_features=${line#AFFECTED_FEATURES=}" >> $GITHUB_OUTPUT
+            fi
+          done < analysis_output.txt
+
+      - name: Generate context-aware prompt
+        id: prompt
+        if: steps.changed-files.outputs.has_doc_changes == 'true'
+        run: |
+          # Create a context-aware prompt based on the analysis
+          SECTIONS="${{ steps.analyze.outputs.sections }}"
+          FEATURES="${{ steps.analyze.outputs.affected_features }}"
+          HAS_LLMS="${{ steps.analyze.outputs.has_llms_changes }}"
+          HAS_CONFIG="${{ steps.analyze.outputs.has_config_changes }}"
+          CUSTOM_PROMPT="${{ github.event.inputs.custom_prompt }}"
+          
+          PROMPT="Review and improve the documentation changes in PR #${{ steps.pr-info.outputs.pr_number }}: ${{ steps.pr-info.outputs.pr_url }}
+
+          **PR Title:** ${{ steps.pr-info.outputs.pr_title }}
+          
+          **PR Description:** ${{ steps.pr-info.outputs.pr_body }}
+          
+          **Changed Files:** ${{ steps.changed-files.outputs.changed_files }}
+          
+          **Analysis:**
+          - Affected sections: ${SECTIONS}
+          - Affected features: ${FEATURES}
+          - LLMs files changed: ${HAS_LLMS}
+          - Configuration changed: ${HAS_CONFIG}
+          
+          **Review Focus:**"
+          
+          if [[ "$HAS_LLMS" == "true" ]]; then
+            PROMPT="$PROMPT
+          - ⚠️  CRITICAL: llms.txt files were modified - ensure they maintain proper structure and accurate links"
+          fi
+          
+          if [[ "$HAS_CONFIG" == "true" ]]; then
+            PROMPT="$PROMPT
+          - ⚠️  CRITICAL: docs.json configuration changed - validate navigation structure and metadata"
+          fi
+          
+          PROMPT="$PROMPT
+          - Verify technical accuracy and completeness of all changes
+          - Ensure consistency with Base documentation style and tone
+          - Validate all code examples are correct and runnable
+          - Check that all internal links and cross-references work
+          - Fix any typos, grammar issues, or formatting problems
+          - Ensure proper heading hierarchy and structure
+          - Validate that new content follows established patterns
+          - Update related sections if necessary for consistency"
+          
+          if [[ -n "$CUSTOM_PROMPT" ]]; then
+            PROMPT="$PROMPT
+          
+          **Additional Instructions:** $CUSTOM_PROMPT"
+          fi
+          
+          # Save prompt to file for the API call
+          echo "$PROMPT" > agent_prompt.txt
+          echo "Generated context-aware prompt for Mintlify Agent"
+
+      - name: Create agent branch
+        id: branch
+        if: steps.changed-files.outputs.has_doc_changes == 'true'
+        run: |
+          timestamp=$(date +%s)
+          branch_name="mintlify-agent-pr-${{ steps.pr-info.outputs.pr_number }}-${timestamp}"
+          echo "branch_name=${branch_name}" >> $GITHUB_OUTPUT
+
+      - name: Call Mintlify Agent API
+        id: agent-call
+        if: steps.changed-files.outputs.has_doc_changes == 'true'
+        run: |
+          # Read the generated prompt
+          PROMPT_CONTENT=$(cat agent_prompt.txt)
+          
+          # Create JSON payload with proper escaping
+          cat > payload.json << EOF
+          {
+            "branch": "${{ steps.branch.outputs.branch_name }}",
+            "messages": [
+              {
+                "role": "system",
+                "content": "You are an expert technical documentation reviewer specializing in Base blockchain documentation. You understand the Base ecosystem, smart contracts, DeFi, and developer tools. Focus on accuracy, clarity, consistency, and following established documentation patterns. Pay special attention to code examples, API references, and cross-links between sections."
+              },
+              {
+                "role": "user",
+                "content": $(echo "$PROMPT_CONTENT" | jq -Rs .)
+              }
+            ]
+          }
+          EOF
+          
+          echo "🚀 Calling Mintlify Agent API..."
+          echo "Project ID: ${{ secrets.MINTLIFY_PROJECT_ID }}"
+          echo "Branch: ${{ steps.branch.outputs.branch_name }}"
+          
+          # Make the API call with better error handling
+          HTTP_RESPONSE=$(curl -X POST \
+            "https://api.mintlify.com/v1/agent/${{ secrets.MINTLIFY_PROJECT_ID }}/job" \
+            -H "Authorization: Bearer ${{ secrets.MINTLIFY_API_ADMIN_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d @payload.json \
+            --write-out "HTTPSTATUS:%{http_code}\nTIME_TOTAL:%{time_total}" \
+            --silent \
+            --show-error \
+            --max-time 30)
+          
+          # Parse response
+          HTTP_BODY=$(echo "$HTTP_RESPONSE" | sed -E '/^(HTTPSTATUS|TIME_TOTAL):/d')
+          HTTP_STATUS=$(echo "$HTTP_RESPONSE" | grep "HTTPSTATUS:" | cut -d: -f2)
+          TIME_TOTAL=$(echo "$HTTP_RESPONSE" | grep "TIME_TOTAL:" | cut -d: -f2)
+          
+          echo "HTTP Status: ${HTTP_STATUS}"
+          echo "Response Time: ${TIME_TOTAL}s"
+          echo "Response Body: ${HTTP_BODY}"
+          
+          if [ "$HTTP_STATUS" -eq 200 ]; then
+            echo "✅ Mintlify Agent API call successful"
+            echo "agent_success=true" >> $GITHUB_OUTPUT
+            
+            # Extract session ID if present in headers or response
+            SESSION_ID=$(echo "$HTTP_BODY" | grep -o '"session[_-]id"[[:space:]]*:[[:space:]]*"[^"]*"' | cut -d'"' -f4 || echo "")
+            if [ -n "$SESSION_ID" ]; then
+              echo "session_id=${SESSION_ID}" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "❌ Mintlify Agent API call failed"
+            echo "Status: ${HTTP_STATUS}"
+            echo "Body: ${HTTP_BODY}"
+            echo "agent_success=false" >> $GITHUB_OUTPUT
+            echo "error_details=${HTTP_BODY}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Post success comment
+        if: steps.agent-call.outputs.agent_success == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const branchName = '${{ steps.branch.outputs.branch_name }}';
+            const sections = '${{ steps.analyze.outputs.sections }}';
+            const features = '${{ steps.analyze.outputs.affected_features }}';
+            const hasLlms = '${{ steps.analyze.outputs.has_llms_changes }}' === 'true';
+            const hasConfig = '${{ steps.analyze.outputs.has_config_changes }}' === 'true';
+            
+            let specialNotes = '';
+            if (hasLlms) {
+              specialNotes += '\n⚠️ **LLMs files changed** - The agent will pay special attention to llms.txt structure and links';
+            }
+            if (hasConfig) {
+              specialNotes += '\n⚠️ **Configuration changed** - The agent will validate docs.json navigation structure';
+            }
+            
+            const comment = `## 🤖 Mintlify Agent Documentation Review Started
+            
+            I've initiated an advanced documentation review for this PR using the Mintlify Agent.
+            
+            **📊 Analysis:**
+            - **Affected sections:** ${sections || 'general'}
+            - **Features:** ${features || 'none detected'}
+            - **Review branch:** \`${branchName}\`${specialNotes}
+            
+            **🔍 The agent will:**
+            - ✅ Verify technical accuracy and completeness
+            - ✅ Ensure Base documentation style consistency  
+            - ✅ Validate all code examples and API references
+            - ✅ Check internal links and cross-references
+            - ✅ Fix grammar, typos, and formatting issues
+            - ✅ Maintain proper heading hierarchy
+            - ✅ Update related sections for consistency
+            
+            **⏱️ Timeline:** The review typically takes 2-5 minutes. You'll see a new PR if improvements are suggested.
+            
+            Monitor progress in your [Mintlify Dashboard](https://dashboard.mintlify.com) 📊
+            
+            ---
+            *Automated review triggered by documentation changes*`;
+            
+            github.rest.issues.createComment({
+              issue_number: ${{ steps.pr-info.outputs.pr_number }},
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+      - name: Post failure comment
+        if: steps.agent-call.outputs.agent_success == 'false'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const errorDetails = '${{ steps.agent-call.outputs.error_details }}';
+            
+            const comment = `## ❌ Mintlify Agent Review Failed
+            
+            The automated documentation review encountered an error and could not be completed.
+            
+            **🔧 Troubleshooting Steps:**
+            1. Verify Mintlify API credentials in repository secrets
+            2. Check if the project ID is correct: \`MINTLIFY_PROJECT_ID\`
+            3. Ensure API key has proper permissions: \`MINTLIFY_API_ADMIN_KEY\`
+            4. Check for API rate limits or service issues
+            
+            **📝 Error Details:**
+            \`\`\`
+            ${errorDetails || 'No additional error details available'}
+            \`\`\`
+            
+            **🔄 Next Steps:**
+            - You can retry by re-running the workflow
+            - Or manually trigger with: \`/workflow_dispatch\`
+            - Consider manual review of the documentation changes
+            
+            ---
+            *If this issue persists, please check the [Mintlify Status Page](https://status.mintlify.com)*`;
+            
+            github.rest.issues.createComment({
+              issue_number: ${{ steps.pr-info.outputs.pr_number }},
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+      - name: Skip comment for non-doc changes
+        if: steps.changed-files.outputs.has_doc_changes == 'false'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const comment = `## 📝 Documentation Review Skipped
+            
+            No documentation files were changed in this PR, so the Mintlify Agent review was skipped.
+            
+            **Changed files:** Non-documentation files only
+            
+            If you believe this is incorrect, you can manually trigger the review using the workflow dispatch option.`;
+            
+            github.rest.issues.createComment({
+              issue_number: ${{ steps.pr-info.outputs.pr_number }},
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
