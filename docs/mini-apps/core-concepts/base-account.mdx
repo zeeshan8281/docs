@@ -1,174 +1,293 @@
 ---
 title: "Base Account"
-description: "Learn how Base Accounts enhance Mini App user experience and what Mini App developers need to know to implement Base Account capabilities."
+description: "Learn how to use Base Account features in Mini Apps"
 ---
 
-> **What you'll learn**  
-> By the end of this guide, you'll understand:
-> - How to handle wallet transactions effectively in Mini Apps, including leveraging enhanced Base Account capabilities when available.
+## What is Base Account?
 
-## Default Wallets in Mini Apps
-Mini Apps launched within the Base App are automatically connected to the user's [Base Account](/base-account/overview), eliminating wallet connection flows and enabling instant onchain interactions. This zero-friction approach means users can immediately swap, send, and transact without any wallet setup, maintaining a familiar experience with their existing Base Account and assets.
+Base Account is a Smart Wallet-backed account that provides:
 
-## For Mini App Development
+- **Universal sign-on** – one passkey works across every Base-enabled app
+- **One-tap USDC payments** – low-friction payments built into the account layer
+- **Gasless transactions** – apps can sponsor user transaction fees
+- **Batch transactions** – combine multiple operations into a single confirmation
+- **Multi-chain support** – works across nine EVM networks including Base, Arbitrum, Optimism, and more
 
-<Steps>
-<Step title="Detect Base Account Capabilities">
-Base Accounts offer enhanced features that traditional wallets don't support.
+Mini Apps launched within the Base App are automatically connected to the user's Base Account, eliminating wallet connection flows and enabling instant onchain interactions.
 
-- Use `wallet_getCapabilities` to check for `atomicBatch`, `paymasterService`, and `auxiliaryFunds`
-- Adapt your UI to show streamlined workflows for Base Account users
-- Provide fallback experiences for traditional wallets
+<CardGroup cols={2}>
+  <Card title="Learn More" icon="book" href="/base-account/overview/what-is-base-account">
+    Full Base Account Overview
+  </Card>
+</CardGroup>
 
-<Check>
-Test with both Base Accounts and traditional wallets to ensure your capability detection works correctly.
-</Check>
+---
 
-Learn More: [Base Account Capabilities Overview](/base-account/reference/core/capabilities/overview)
-</Step>
+## Base Pay in Mini Apps
 
-<Step title="Implement Sponsored Gas Transactions">
-Enable sponsored gas transactions where your Mini App pays gas fees for users.
+Accept one-tap USDC payments with the Base Pay helper function. No additional setup required—just import and call:
 
-- Check for `paymasterService` capability before offering gas-free transactions
-- Use the `capabilities` parameter in `writeContracts` to enable sponsored gas
-- Handle cases where paymaster service is unavailable
+```typescript
+import { pay, getPaymentStatus } from '@base-org/account';
 
-<Check>
-Verify your Mini App works with Base Accounts that have zero ETH balance.
-</Check>
-
-Learn More: [Paymaster Service](/base-account/reference/core/capabilities/paymasterService)
-</Step>
-
-<Step title="Optimize Transaction Patterns">
-Base Accounts can batch multiple operations into single transactions.
-
-- Use `atomicBatch` capability to group related transactions
-- Implement `wallet_sendCalls` for complex workflows
-- Show one confirmation instead of multiple prompts
+async function handlePayment() {
+  try {
+    const payment = await pay({
+      amount: '5.00',           // USD amount
+      to: '0xYourAddress',      // your recipient address
+      testnet: true             // set false for mainnet
+    });
+    
+    console.log(`Payment sent! ID: ${payment.id}`);
+    
+    // Check payment status
+    const { status } = await getPaymentStatus({ 
+      id: payment.id,
+      testnet: true 
+    });
+    
+    if (status === 'completed') {
+      console.log('Payment confirmed!');
+    }
+  } catch (error) {
+    console.error('Payment failed:', error.message);
+  }
+}
+```
 
 <Tip>
-Consider transaction batching for multi-step operations like approve + transfer + mint.
+**Collect user info at checkout**
+
+You can request email, phone, or shipping address by passing a `payerInfo` object. See the [Accept Payments Guide](/base-account/guides/accept-payments#collect-user-information-optional) for details.
 </Tip>
 
-Learn More: [Batch Transactions Guide](/base-account/improve-ux/batch-transactions)
-</Step>
-</Steps>
+<CardGroup cols={2}>
+  <Card title="Base Pay Guide" icon="credit-card" href="/base-account/guides/accept-payments">
+    Complete implementation guide with examples
+  </Card>
+  <Card title="Base Pay Button" icon="button" href="/base-account/reference/ui-elements/base-pay-button">
+    Pre-built UI component
+  </Card>
+</CardGroup>
 
-## Base Account Benefits for Mini Apps
+---
 
-| Feature | What It Does | Mini App Benefit |
-|---------|-------------|------------------|
-| Atomic Batch | Combines multiple transactions into one | Multi-step workflows require only one user confirmation |
-| Paymaster Service | App pays gas fees, not user | Users can transact without owning ETH |
-| Passkey Authentication | Uses device biometrics instead of private keys | Faster, more secure user authentication |
+## Using Base Account Features
 
-## Implementation Examples
+### Get the Ethereum Provider
 
-### Capability Detection
+In Mini Apps, access Base Account through the standard Ethereum provider:
 
-```javascript
-function useBaseAccountCapabilities(address) {
-  const [capabilities, setCapabilities] = useState({});
-  
-  useEffect(() => {
-    async function detect() {
-      const caps = await publicClient.request({
-        method: 'wallet_getCapabilities',
-        params: [address]
-      });
-      
-      setCapabilities({
-        atomicBatch: caps['0x2105']?.atomicBatch?.supported,
-        paymasterService: caps['0x2105']?.paymasterService?.supported,
-        auxiliaryFunds: caps['0x2105']?.auxiliaryFunds?.supported
-      });
-    }
-    
-    if (address) detect();
-  }, [address]);
-  
-  return capabilities;
+```typescript
+// Get the provider
+const provider = window.ethereum;
+
+if (!provider) {
+  console.error('No Ethereum provider found');
+  return;
 }
+
+// Request account access
+const accounts = await provider.request({ 
+  method: 'eth_requestAccounts' 
+});
+
+console.log('Connected account:', accounts[0]);
 ```
 
-### Sponsored Gas Implementation
+### Available RPC Methods
 
-```javascript
-import { useCapabilities, useWriteContracts } from 'wagmi/experimental'
+Once you have the provider, you can call Base Account RPC methods. See the [full RPC methods reference](/base-account/reference/core/provider-rpc-methods/request-overview) for complete details.
 
-function SponsoredTransactionButton() {
-  const account = useAccount()
-  const { writeContracts } = useWriteContracts()
-  const { data: availableCapabilities } = useCapabilities({
-    account: account.address,
-  })
+<Warning>
+**Unsupported Methods in Mini Apps**
+
+The following methods are not yet supported in Mini Apps but will be added soon:
+- `wallet_sign`
+- `wallet_connect`
+- `wallet_getSubAccounts`
+- `wallet_addSubAccount`
+- `coinbase_fetchPermissions`
+- `coinbase_fetchPermission`
+- `signTypedData`
+
+All other standard Ethereum and Base Account RPC methods work as expected.
+</Warning>
+
+---
+
+## Key Features & Examples
+
+### 1. Batch Transactions
+
+Combine multiple operations into a single user confirmation using `wallet_sendCalls`:
+
+```typescript
+import { numberToHex, parseEther } from 'viem';
+
+async function batchTransfer() {
+  const provider = window.ethereum;
+  const accounts = await provider.request({ method: 'eth_requestAccounts' });
   
-  const capabilities = useMemo(() => {
-    if (!availableCapabilities || !account.chainId) return {}
-    const capabilitiesForChain = availableCapabilities[account.chainId]
-    if (
-      capabilitiesForChain['paymasterService'] &&
-      capabilitiesForChain['paymasterService'].supported
-    ) {
-      return {
-        paymasterService: {
-          url: `https://api.developer.coinbase.com/rpc/v1/base/v7HqDLjJY4e28qgIDAAN4JNYXnz88mJZ`,
+  const result = await provider.request({
+    method: 'wallet_sendCalls',
+    params: [{
+      version: '1.0',
+      from: accounts[0],
+      chainId: numberToHex(8453), // Base mainnet
+      calls: [
+        {
+          to: '0xRecipient1',
+          value: numberToHex(parseEther('0.01')),
+          data: '0x'
         },
-      }
-    }
-    return {}
-  }, [availableCapabilities, account.chainId])
-
-  const handleSponsoredMint = () => {
-    writeContracts({
-      contracts: [{
-        address: '0x...',
-        abi: contractAbi,
-        functionName: 'mint',
-        args: [account.address],
-      }],
-      capabilities,
-    })
-  }
-
-  return <button onClick={handleSponsoredMint}>Mint NFT (Gas Free)</button>
-}
-```
-
-### Capability-Based UI
-
-```javascript
-function MiniAppWorkflow() {
-  const { address } = useAccount();
-  const { atomicBatch } = useBaseAccountCapabilities(address);
+        {
+          to: '0xRecipient2',
+          value: numberToHex(parseEther('0.01')),
+          data: '0x'
+        }
+      ]
+    }]
+  });
   
-  if (atomicBatch) {
-    // Base Account: One-click workflow
-    return <OneClickPurchaseFlow />;
-  } else {
-    // Traditional wallet: Multi-step workflow  
-    return <MultiStepPurchaseFlow />;
-  }
+  console.log('Batch transaction sent:', result);
 }
 ```
+
+<Card title="Batch Transactions Guide" icon="layer-group" href="/base-account/improve-ux/batch-transactions">
+  Learn about atomic batching, ERC-20 approvals, and error handling
+</Card>
+
+### 2. Sponsored Gas Transactions
+
+Let your Mini App pay gas fees for users with paymaster capabilities:
+
+```typescript
+import { numberToHex, encodeFunctionData } from 'viem';
+
+async function sponsoredMint() {
+  const provider = window.ethereum;
+  const accounts = await provider.request({ method: 'eth_requestAccounts' });
+  
+  const nftABI = [
+    {
+      name: 'mint',
+      type: 'function',
+      stateMutability: 'nonpayable',
+      inputs: [{ name: 'to', type: 'address' }],
+      outputs: []
+    }
+  ];
+  
+  const result = await provider.request({
+    method: 'wallet_sendCalls',
+    params: [{
+      version: '1.0',
+      from: accounts[0],
+      chainId: numberToHex(8453),
+      calls: [{
+        to: '0xNFTContract',
+        value: '0x0',
+        data: encodeFunctionData({
+          abi: nftABI,
+          functionName: 'mint',
+          args: [accounts[0]]
+        })
+      }],
+      capabilities: {
+        paymasterService: {
+          url: 'https://api.developer.coinbase.com/rpc/v1/base/YOUR_KEY'
+        }
+      }
+    }]
+  });
+  
+  console.log('Sponsored transaction sent:', result);
+}
+```
+
+<Card title="Sponsor Gas Guide" icon="gas-pump" href="/base-account/improve-ux/sponsor-gas/paymasters">
+  Set up paymasters and manage gas sponsorship
+</Card>
+
+### 3. Check Wallet Capabilities
+
+Detect what features the user's Base Account supports:
+
+```typescript
+async function checkCapabilities() {
+  const provider = window.ethereum;
+  const accounts = await provider.request({ method: 'eth_requestAccounts' });
+  
+  const capabilities = await provider.request({
+    method: 'wallet_getCapabilities',
+    params: [accounts[0]]
+  });
+  
+  const baseCapabilities = capabilities['0x2105']; // Base mainnet chain ID
+  
+  console.log('Atomic batch:', baseCapabilities?.atomicBatch?.supported);
+  console.log('Paymaster:', baseCapabilities?.paymasterService?.supported);
+  console.log('Auxiliary funds:', baseCapabilities?.auxiliaryFunds?.supported);
+}
+```
+
+<Card title="Capabilities Reference" icon="list-check" href="/base-account/reference/core/capabilities/overview">
+  Full list of Base Account capabilities
+</Card>
+
+### 4. User Authentication
+
+Authenticate users with wallet signatures instead of passwords:
+
+```typescript
+async function signInWithBase() {
+  const provider = window.ethereum;
+  const accounts = await provider.request({ method: 'eth_requestAccounts' });
+  
+  // Create a message to sign
+  const message = `Sign in to MyApp\nNonce: ${crypto.randomUUID()}`;
+  
+  // Request signature
+  const signature = await provider.request({
+    method: 'personal_sign',
+    params: [message, accounts[0]]
+  });
+  
+  // Send to backend for verification
+  const response = await fetch('/auth/verify', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ 
+      address: accounts[0], 
+      message, 
+      signature 
+    })
+  });
+  
+  const session = await response.json();
+  console.log('Authenticated:', session);
+}
+```
+
+<Card title="Authentication Guide" icon="key" href="/base-account/guides/authenticate-users">
+  Implement Sign-In with Base (SIWE)
+</Card>
+
+---
 
 ## Additional Resources
 
-For detailed implementation of Base Account features:
-
 <CardGroup cols={3}>
-<Card title="User Authentication" href="https://docs.base.org/base-account/guides/authenticate-users">
-Authenticate Users Guide
-</Card>
-
-<Card title="Base Pay Guide" href="https://docs.base.org/base-account/guides/accept-payments">
-Base Pay Guide
-</Card>
-
-<Card title="Sign and Verify Signatures" href="https://docs.base.org/base-account/guides/sign-and-verify-typed-data">
-Sign and Verify Typed Data Guide
-</Card>
+  <Card title="Accept Recurring Payments" icon="repeat" href="/base-account/guides/accept-recurring-payments">
+    Set up subscription payments
+  </Card>
+  
+  <Card title="Spend Permissions" icon="wallet" href="/base-account/improve-ux/spend-permissions">
+    Grant spending allowances
+  </Card>
+  
+  <Card title="Sign & Verify Data" icon="signature" href="/base-account/guides/sign-and-verify-typed-data">
+    EIP-712 typed data signatures
+  </Card>
 </CardGroup>
-
