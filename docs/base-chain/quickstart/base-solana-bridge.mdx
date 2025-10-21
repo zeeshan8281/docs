@@ -62,13 +62,17 @@ This is a convenience feature built on top of the bridge to reduce friction in t
 
 ## Bridging Flows
 
-<CardGroup cols={3}>
+<CardGroup cols={2}>
   <Card title="Solana to Base" icon="arrow-right" href="#solana-to-base">
     Automatic relay system for seamless transfers
   </Card>
 
   <Card title="Base to Solana" icon="arrow-left" href="#base-to-solana">
     Manual proof-based transfers with full control
+  </Card>
+
+  <Card title="Builder Codes" icon="gift" href="#builder-codes">
+    Attribute traffic and earn rewards for your bridge integrations
   </Card>
 
   <Card title="Full Stack Example" icon="code" href="#sol2base%3A-full-stack-example">
@@ -186,6 +190,162 @@ const proveIx = getProveMessageInstruction({
 const relayIx = getRelayMessageInstruction({ message: messagePda });
 await buildAndSendTransaction(SOLANA_RPC_URL, [proveIx, relayIx], payer);
 ```
+
+## Builder Codes
+
+Builder codes allow developers to attribute bridge traffic and receive rewards when users bridge through their applications. This feature works with the Solana to Base bridge flow, enabling you to:
+
+* **Earn rewards** for driving bridge traffic
+* **Track attribution** for your application's bridge volume
+* **Chain additional calls** on Base while maintaining attribution
+
+<Info>
+Builder codes are currently available for **Solana → Base** bridge flows only.
+</Info>
+
+### Step 0: Register Your Builder Code
+
+For now, Builder Codes are manually assigned by the Base team. Once issued, you'll receive a `bytes32` code to use in your bridge operations.
+
+
+### Hook Data Schema
+
+`hookData` must be exactly the ABI encoding of:
+
+```solidity
+(address user, bytes32 code, uint16 feeBps)
+```
+
+- `user` → The user address on Base (NOT the Twin contract address)
+- `code` → Your builder code (as bytes32)
+- `feeBps` → Fee in basis points (e.g., 100 for 1%)
+
+**Example:**
+```
+address userTwin   = 0xUSER_TWIN;      // Twin contract on Base
+bytes32 builderCode = 0xBUILDER_CODE;  // Assigned code
+uint16 feeBps      = 100;              // 1%
+
+bytes memory hookData = abi.encode(userTwin, builderCode, feeBps);
+```
+
+### Simple Bridge (No Extra Call)
+
+**Original (no attribution):** Bridge 100 SOL to `0xabc` on Base
+
+```
+outgoing_message_salt: <random>
+to:                  0xabc
+remote_token:        <wSOL on Base>
+amount:              100
+call:                None
+```
+
+**With builder code** (prepend `Flywheel.send`):
+
+```
+outgoing_message_salt: <random>
+to:                  <BRIDGE_CAMPAIGN_ADDRESS>
+remote_token:        <wSOL on Base>
+amount:              100
+call:                Some(call_to_send)
+
+call_to_send:
+  ty:    Call
+  to:    <FLYWHEEL_ADDRESS>
+  value: 0
+  data:  abi.encodeWithSelector(
+           Flywheel.send.selector,
+           <BRIDGE_CAMPAIGN_ADDRESS>,
+           <wSOL_ADDRESS>,
+           hookData // abi.encode(userTwin, builderCode, feeBps)
+         )
+```
+
+<Note>
+**Why `to = BRIDGE_CAMPAIGN_ADDRESS`?** Because the tokens must arrive at the Bridge campaign first; `Flywheel.send(...)` attributes the action before the campaign forwards/finalizes as designed.
+</Note>
+
+### Bridge with Existing Follow-Up Call
+
+**Original (no attribution):** Bridge 100 SOL to `0xabc` on Base, then call `Counter.increment()`
+
+```
+outgoing_message_salt: <random>
+to:                  0xabc
+remote_token:        <wSOL on Base>
+amount:              100
+call:                Some(call)
+
+call:
+  ty:    Call
+  to:    <COUNTER_ADDRESS>
+  value: 0
+  data:  abi.encodeWithSelector(Counter.increment.selector)
+```
+
+**With builder code** (prepend Flywheel + keep Counter call): Wrap both calls in a `Multicall` executed by `DelegateCall` from the Twin contract context.
+
+```
+outgoing_message_salt: <random>
+to:                  <BRIDGE_CAMPAIGN_ADDRESS>
+remote_token:        <wSOL on Base>
+amount:              100
+call:                Some(call_to_send)
+
+call_to_send:
+  ty:    DelegateCall
+  to:    <MULTICALL_ADDRESS>
+  value: 0
+  data:  abi.encodeWithSelector(
+           Multicall.multicall.selector,
+           calls
+         )
+```
+
+Where `calls` is the ABI-encoded array of `Call`:
+
+```solidity
+struct Call {
+  address to;
+  uint256 value;
+  bytes   data;
+}
+
+Call[] memory calls = new Call[](2);
+
+// 1) Flywheel attribution first
+calls[0] = Call({
+  to:    <FLYWHEEL_ADDRESS>,
+  value: 0,
+  data:  abi.encodeWithSelector(
+           Flywheel.send.selector,
+           <BRIDGE_CAMPAIGN_ADDRESS>,
+           <wSOL_ADDRESS>,
+           hookData // abi.encode(userTwin, builderCode, feeBps)
+         )
+});
+
+// 2) Original follow-up
+calls[1] = Call({
+  to:    <COUNTER_ADDRESS>,
+  value: 0,
+  data:  abi.encodeWithSelector(Counter.increment.selector)
+});
+
+bytes memory data = abi.encodeWithSelector(Multicall.multicall.selector, calls);
+```
+
+<Warning>
+**Execution order matters!** `Flywheel.send` must be first so attribution is recorded before subsequent actions and the tokens are properly redistributed to the user.
+</Warning>
+
+### TL;DR
+
+1. Register a builder code and build `hookData = abi.encode(userTwin, code, feeBps)`
+2. Set bridge `to = <BRIDGE_CAMPAIGN_ADDRESS>` and `remote_token = <wSOL_ADDRESS>`
+3. **No extra call?** `call.ty = Call` to `Flywheel.send(...)`
+4. **With extra calls?** `call.ty = DelegateCall` to `Multicall.multicall([ Flywheel.send(...), yourCall(...) ])`
 
 ## Utilities
 
