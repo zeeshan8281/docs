@@ -342,7 +342,7 @@ bytes memory data = abi.encodeWithSelector(Multicall.multicall.selector, calls);
 
 ### TL;DR
 
-1. Register a builder code and build `hookData = abi.encode(userTwin, code, feeBps)`
+1. Register a builder code and build `hookData = abi.encode(user, code, feeBps)`
 2. Set bridge `to = <BRIDGE_CAMPAIGN_ADDRESS>` and `remote_token = <wSOL_ADDRESS>`
 3. **No extra call?** `call.ty = Call` to `Flywheel.send(...)`
 4. **With extra calls?** `call.ty = DelegateCall` to `Multicall.multicall([ Flywheel.send(...), yourCall(...) ])`
