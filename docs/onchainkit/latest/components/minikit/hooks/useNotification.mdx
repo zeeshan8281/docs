@@ -3,12 +3,10 @@ title: useNotification
 description: Send notifications via a backend proxy to users who saved your Mini App 
 ---
 
-Defined in [@coinbase/onchainkit](https://github.com/coinbase/onchainkit)
-
 <Warning>
-Notifications are not yet available in Base App but are coming soon. This documentation describes the upcoming API that will be available when notifications are fully deployed.
+This hook is now deprecated. Please follow the instructions in the [Notifications](/mini-apps/core-concepts/notifications) documentation to send notifications.
 </Warning>
-ebcbglkhecg
+
 
 <Info>
 Allows Mini Apps to send push notifications to users who have saved your app. Notifications require a backend proxy route to handle the actual delivery and enforce rate limiting.
@@ -123,73 +121,6 @@ async function checkRateLimit(request: NextRequest): Promise<boolean> {
   // Return true if rate limit is exceeded
   return false;
 }
-```
-
-```python server.py
-from fastapi import FastAPI, HTTPException, BackgroundTasks
-from pydantic import BaseModel
-import httpx
-import os
-from typing import Optional
-
-app = FastAPI()
-
-class NotificationRequest(BaseModel):
-    title: str
-    body: str
-    targetFid: Optional[str] = None
-    actionUrl: Optional[str] = None
-
-FARCASTER_API_URL = "https://api.farcaster.xyz"
-MAX_NOTIFICATIONS_PER_HOUR = 10
-
-@app.post("/api/minikit/notifications")
-async def send_notification(
-    notification: NotificationRequest,
-    background_tasks: BackgroundTasks
-):
-    # Validate input
-    if len(notification.title) > 100:
-        raise HTTPException(status_code=400, detail="Title too long")
-    
-    if len(notification.body) > 500:
-        raise HTTPException(status_code=400, detail="Body too long")
-    
-    # Check rate limits
-    if await is_rate_limited():
-        raise HTTPException(status_code=429, detail="Rate limit exceeded")
-    
-    # Prepare payload
-    payload = {
-        "title": notification.title,
-        "body": notification.body,
-        "targetFid": notification.targetFid,
-        "actionUrl": notification.actionUrl or os.getenv("MINI_APP_URL"),
-        "appId": os.getenv("MINI_APP_ID"),
-    }
-    
-    # Send to Farcaster API
-    async with httpx.AsyncClient() as client:
-        response = await client.post(
-            f"{FARCASTER_API_URL}/notifications",
-            json=payload,
-            headers={
-                "Authorization": f"Bearer {os.getenv('FARCASTER_API_KEY')}",
-                "Content-Type": "application/json",
-            }
-        )
-        
-        if response.status_code != 200:
-            raise HTTPException(
-                status_code=500, 
-                detail="Failed to send notification"
-            )
-        
-        return response.json()
-
-async def is_rate_limited() -> bool:
-    # Implement rate limiting logic
-    return False
 ```
 </RequestExample>
 
