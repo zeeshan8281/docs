@@ -226,7 +226,7 @@ address user   = 0xUSER;
 bytes32 builderCode = 0xBUILDER_CODE;  // Assigned code
 uint16 feeBps      = 100;              // 1%
 
-bytes memory hookData = abi.encode(userTwin, builderCode, feeBps);
+bytes memory hookData = abi.encode(user, builderCode, feeBps);
 ```
 
 ### Simple Bridge (No Extra Call)
