@@ -263,7 +263,9 @@ call_to_send:
 ```
 
 <Note>
-**Why `to = BRIDGE_CAMPAIGN_ADDRESS`?** Because the tokens must arrive at the Bridge campaign first; `Flywheel.send(...)` attributes the action before the campaign forwards/finalizes as designed.
+**Why `to = BRIDGE_CAMPAIGN_ADDRESS`?**
+
+When using a Builder Code, the token transfer must send the tokens to `BRIDGE_CAMPAIGN_ADDRESS`. That contract will then forward the tokens to the intended user (recipient) on the base network.
 </Note>
 
 ### Bridge with Existing Follow-Up Call
