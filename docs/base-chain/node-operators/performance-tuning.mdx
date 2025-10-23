@@ -28,13 +28,13 @@ If utilizing Amazon Elastic Block Store (EBS), io2 Block Express volumes are rec
 
 The following are the hardware specifications used for Base production nodes:
 
-- **Geth Full Node:**
-    - Instance: AWS `i4i.12xlarge`  
+- **Reth Archive Node (recommended):**
+    - Instance: AWS `i4ie.6xlarge`  
     - Storage: RAID 0 of all local NVMe drives (`/dev/nvme*`)  
     - Filesystem: ext4  
 
-- **Reth Archive Node:**
-    - Instance: AWS `i4ie.6xlarge`  
+- **Geth Full Node:**
+    - Instance: AWS `i4i.12xlarge`  
     - Storage: RAID 0 of all local NVMe drives (`/dev/nvme*`)  
     - Filesystem: ext4  
 
@@ -56,6 +56,11 @@ Reth is currently the most performant client for running Base nodes. Future opti
 | Archive | [Reth](https://github.com/base/node/tree/main/reth)                                               |
 
 ### Geth Performance Tuning
+
+<Warning>
+Geth is no longer supported and Reth is the recommended client. We recommend migrating Geth nodes to Reth.
+</Warning>
+
 
 #### Geth Cache Settings
 
