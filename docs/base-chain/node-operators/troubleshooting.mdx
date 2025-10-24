@@ -10,9 +10,8 @@ This guide covers common issues encountered when setting up and running a Base n
 Before diving into specific issues, here are some general steps that often help:
 
 1. **Check Container Logs**: This is usually the most informative step. Use `docker compose logs -f <service_name>` to view the real-time logs for a specific container.
-    - L2 Client (Reth): `docker compose logs -f op-reth`
-    - L2 Client (Geth): `docker compose logs -f op-geth`
-    - Rollup Node: `docker compose logs -f op-node`. Look for errors, warnings, or repeated messages.
+    - L2 Client (Reth/Geth): `docker compose logs -f execution`
+    - Rollup Node: `docker compose logs -f node`. Look for errors, warnings, or repeated messages.
 
 2. **Check Container Status**: Ensure the relevant Docker containers are running: `docker compose ps`. If a container is restarting frequently or exited, check its logs.
 
@@ -49,8 +48,8 @@ Before diving into specific issues, here are some general steps that often help:
 
 - **Issue**: Node doesn't start syncing or appears stuck (block height not increasing).  
     - **Check**: `op-node` logs. Look for errors connecting to L1 endpoints or the L2 client.  
-    - **Check**: L2 client (`op-reth`/`op-geth`) logs. Look for errors connecting to `op-node` via the Engine API (port `8551`) or P2P issues.  
-    - **Check**: L1 node health and sync status. Is the L1 node accessible and fully synced?  
+    - **Check**: Look at logs for the execution client. Look for errors connecting to `op-node` via the Engine API (port `8551`) or P2P issues.
+    - **Check**: L1 node health and sync status. Is the L1 node accessible and fully synced?
     - **Check**: System time. Ensure the server’s clock is accurately synchronized (use `ntp` or `chrony`). Significant time drift can cause P2P issues.
 
 - **Issue**: Syncing is extremely slow.  
@@ -60,7 +59,7 @@ Before diving into specific issues, here are some general steps that often help:
     - **Check**: `op-node` and L2 client logs for any performance warnings or errors.
 
 - **Issue**: `optimism_syncStatus` (port `7545` on `op-node`) shows a large time difference or errors.  
-    - **Action**: Check the logs for both `op-node` and the L2 client (`op-reth`/`op-geth`) around the time the status was checked to identify the root cause (e.g., L1 connection issues, L2 client issues).
+    - **Action**: Check the logs for both `op-node` and the L2 execution client around the time the status was checked to identify the root cause (e.g., L1 connection issues, L2 client issues).
 
 - **Issue**: `Error: nonce has already been used` when trying to send transactions.  
     - **Cause**: The node is not yet fully synced to the head of the chain.  
@@ -102,7 +101,7 @@ Refer to the [Snapshots](/base-chain/node-operators/snapshots) guide for the cor
 ### Networking / Connectivity Issues
 
 - **Issue**: RPC/WS connection refused (e.g., `curl` to `localhost:8545` fails).  
-    - **Check**: Is the L2 client container (`op-reth`/`op-geth`) running (`docker compose ps`)?  
+    - **Check**: Is the L2 client container running (`docker compose ps`)?
     - **Check**: Are you using the correct port (`8545` for HTTP, `8546` for WS by default)?  
     - **Check**: L2 client logs. Did it fail to start the RPC server?  
     - **Check**: Are the `--http.addr` and `--ws.addr` flags set to `0.0.0.0` in the client config/entrypoint to allow external connections (within the Docker network)?
