@@ -19,56 +19,6 @@ Mini Apps launched within the Base App are automatically connected to the user's
 
 ---
 
-## Using Base Account Features
-
-### Get the Ethereum Provider
-
-In Mini Apps, access Base Account through the standard Ethereum provider:
-
-```typescript app.tsx
-// [...]
-
-// Get the provider
-const provider = window.ethereum;
-
-if (!provider) {
-  console.error('No Ethereum provider found');
-  return;
-}
-
-// Request account access
-const accounts = await provider.request({ 
-  method: 'eth_requestAccounts' 
-});
-
-console.log('Connected account:', accounts[0]);
-```
-
-Getting the provider allows you to use the Base Account SDK to interact with the user's Base Account.
-Follow the [Base Account guides](/base-account/overview/what-is-base-account) to use these features.
-
-### Available RPC Methods
-
-Once you have the provider, you can call Base Account RPC methods. See the [full RPC methods reference](/base-account/reference/core/provider-rpc-methods/request-overview) for complete details.
-
-<Warning>
-**Unsupported Methods and Capabilities in Mini Apps**
-
-The following methods and capabilities are not yet supported in Mini Apps but will be added soon:
-- `wallet_sign`
-- `wallet_connect`
-- `wallet_getSubAccounts`
-- `wallet_addSubAccount`
-- `coinbase_fetchPermissions`
-- `coinbase_fetchPermission`
-- `signTypedData`
-- `datacallback`
-
-All other standard Ethereum and Base Account RPC methods work as expected.
-</Warning>
-
----
-
 ## Key Features & Examples
 
 ### 1. Batch Transactions
@@ -195,6 +145,58 @@ async function checkCapabilities() {
 
 ---
 
+## Using Base Account Features
+
+### Get the Ethereum Provider
+
+In Mini Apps, access Base Account through the standard Ethereum provider:
+
+```typescript app.tsx
+// [...]
+
+// Get the provider
+const provider = window.ethereum;
+
+if (!provider) {
+  console.error('No Ethereum provider found');
+  return;
+}
+
+// Request account access
+const accounts = await provider.request({ 
+  method: 'eth_requestAccounts' 
+});
+
+console.log('Connected account:', accounts[0]);
+```
+
+Getting the provider allows you to use the Base Account SDK to interact with the user's Base Account.
+Follow the [Base Account guides](/base-account/overview/what-is-base-account) to use these features.
+
+Once you have the provider, you can call Base Account RPC methods. See the [full RPC methods reference](/base-account/reference/core/provider-rpc-methods/request-overview) for complete details.
+
+The next section lists the methods and capabilities that are not supported in Mini Apps yet.
+
+### Unsupported Methods and Capabilities
+
+The following methods and capabilities are not yet supported in Mini Apps but will be added soon:
+
+| Feature | Method/Capability |
+|---------|------------------|
+| Sign in with Base | `wallet_connect` |
+| Sub accounts | `wallet_getSubAccounts`, `wallet_addSubAccount` |
+| Spend permissions | `coinbase_fetchPermissions`, `coinbase_fetchPermission` |
+| Profiles | `datacallback` |
+| Signing typed data | `signTypedData` |
+| Signing messages | `wallet_sign` |
+
+All other standard Ethereum and Base Account RPC methods work as expected.
+
+<Warning>
+The above list is not exhaustive and may be updated in the future.
+</Warning>
+---
+
 ## Additional Resources
 
 <CardGroup cols={3}>
@@ -202,8 +204,8 @@ async function checkCapabilities() {
     Full overview of Base Account
   </Card>
   
-  <Card title="Base Pay Guide" icon="wallet" href="/base-account/guides/accept-payments">
-    Complete implementation guide with examples
+  <Card title="Base Account Reference" icon="wallet" href="/base-account/reference/core/createBaseAccount">
+    Complete reference for the Base Account SDK
   </Card>
   
   <Card title="Get Support" icon="signature" href="https://discord.com/invite/buildonbase">
