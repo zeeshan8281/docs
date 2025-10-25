@@ -59,7 +59,7 @@ Before diving into specific issues, here are some general steps that often help:
     - **Check**: `op-node` and L2 client logs for any performance warnings or errors.
 
 - **Issue**: `optimism_syncStatus` (port `7545` on `op-node`) shows a large time difference or errors.  
-    - **Action**: Check the logs for both `op-node` and the L2 execution client around the time the status was checked to identify the root cause (e.g., L1 connection issues, L2 client issues).
+    - **Action**: Check the logs for both the rollup node and the L2 execution client around the time the status was checked to identify the root cause (e.g., L1 connection issues, L2 client issues).
 
 - **Issue**: `Error: nonce has already been used` when trying to send transactions.  
     - **Cause**: The node is not yet fully synced to the head of the chain.  
