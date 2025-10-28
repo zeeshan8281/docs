@@ -38,14 +38,14 @@ Notification tokens are unique to each client app. This means a user can have se
   <Step title="Create a webhook server">
     Create a webhook server to handle webhook events.
 
-    <Info>
-    The `data` object returned by `parseWebhookEvent` contains three key fields:
-    - **`fid`**: The user's FID
-    - **`appFid`**: The client's FID (the Base app is 309857)
-    - **`event`**: The event payload with type and notification details
-  
-    Always use both `fid` and `appFid` together to identify a unique user-client combination.
-    </Info> 
+  <Info>
+
+      This code uses Neynar to verify webhook events. Make sure you have:
+      1. Signed up for a [Neynar API key](https://neynar.com) (free tier available)
+      2. Set the `NEYNAR_API_KEY` environment variable in your project
+
+      The `verifyAppKeyWithNeynar` function validates the JSON Signature.
+</Info>
 
     ```ts app/api/webhook/route.ts expandable highlight={20-50}
 
