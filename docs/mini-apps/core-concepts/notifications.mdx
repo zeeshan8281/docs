@@ -39,12 +39,9 @@ Notification tokens are unique to each client app. This means a user can have se
     Create a webhook server to handle webhook events.
 
   <Info>
-
       This code uses Neynar to verify webhook events. Make sure you have:
       1. Signed up for a [Neynar API key](https://neynar.com) (free tier available)
-      2. Set the `NEYNAR_API_KEY` environment variable in your project
-
-      The `verifyAppKeyWithNeynar` function validates the JSON Signature.
+      2. Set the `NEYNAR_API_KEY` environment variable in your project.
 </Info>
 
     ```ts app/api/webhook/route.ts expandable highlight={20-50}
