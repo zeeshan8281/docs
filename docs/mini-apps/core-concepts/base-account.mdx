@@ -25,15 +25,15 @@ Mini Apps launched within the Base App are automatically connected to the user's
 
 Combine multiple operations into a single user confirmation using `wallet_sendCalls`:
 
-```typescript components/batchTransfer.tsx
+```typescript components/batchTransfer.tsx highlight={4,8}
 import { numberToHex, parseEther } from 'viem';
 
 async function batchTransfer() {
-  const provider = window.ethereum;
+  const provider = window.ethereum; // Get the Ethereum provider
   const accounts = await provider.request({ method: 'eth_requestAccounts' });
   
   const result = await provider.request({
-    method: 'wallet_sendCalls',
+    method: 'wallet_sendCalls', // Send the batch transaction
     params: [{
       version: '1.0',
       from: accounts[0],
@@ -65,11 +65,11 @@ async function batchTransfer() {
 
 Let your Mini App pay gas fees for users with paymaster capabilities:
 
-```typescript components/sponsoredMint.tsx
+```typescript components/sponsoredMint.tsx highlight={4,34}
 import { numberToHex, encodeFunctionData } from 'viem';
 
 async function sponsoredMint() {
-  const provider = window.ethereum;
+  const provider = window.ethereum; // Get the Ethereum provider
   const accounts = await provider.request({ method: 'eth_requestAccounts' });
   
   const nftABI = [
@@ -99,7 +99,7 @@ async function sponsoredMint() {
       }],
       capabilities: {
         paymasterService: {
-          url: 'https://api.developer.coinbase.com/rpc/v1/base/YOUR_KEY'
+          url: 'https://api.developer.coinbase.com/rpc/v1/base/YOUR_KEY' // Your paymaster service URL
         }
       }
     }]
@@ -121,13 +121,13 @@ You can get your paymaster API key from [Coinbase Developer Platform](https://do
 EIP-5792 introduced capabilities detection to allow wallets to declare what capabilities they support.
 In order to detect what capabilities the mini apps supports, you can use the `wallet_getCapabilities` method.
 
-```typescript components/checkCapabilities.tsx
+```typescript components/checkCapabilities.tsx highlight={2,6}
 async function checkCapabilities() {
-  const provider = window.ethereum;
+  const provider = window.ethereum; // Get the Ethereum provider
   const accounts = await provider.request({ method: 'eth_requestAccounts' });
   
   const capabilities = await provider.request({
-    method: 'wallet_getCapabilities',
+    method: 'wallet_getCapabilities', // Check the wallet capabilities
     params: [accounts[0]]
   });
   
