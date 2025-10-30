@@ -1,6 +1,6 @@
 ---
 title: "Base Account"
-description: "Learn how to use Base Account features in Mini Apps"
+description: "Deliver a frictionless user experience with one universal account and built-in identity that works across every Mini App in the Base App."
 ---
 
 ## What is Base Account?
@@ -32,7 +32,7 @@ you can follow the steps detailed in the [Common Issues & Debugging](/mini-apps/
 
 Configure Wagmi with the Farcaster Mini App connector and Base Account connector to enable Base Account features in your Mini App:
 
-```typescript wagmi.ts expandable
+```typescript wagmi.ts expandable highlight={16-22}
 "use client";
 
 import { createConfig, http, WagmiProvider } from "wagmi";
