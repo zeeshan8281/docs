@@ -28,8 +28,8 @@ you can follow the steps detailed in the [Common Issues & Debugging](/mini-apps/
 
 ## Implementation
 
-### 1. Set Up Wagmi Provider
-
+<Steps>
+<Step title="Set Up Wagmi Provider">
 Configure Wagmi with the Farcaster Mini App connector and Base Account connector to enable Base Account features in your Mini App:
 
 ```typescript wagmi.ts expandable highlight={16-22}
@@ -71,9 +71,9 @@ export default function Provider({ children }: { children: React.ReactNode }) {
 <Note>
 The `farcasterMiniApp()` connector automatically connects to the user's Base Account when the Mini App launches within the Base App.
 </Note>
+</Step>
 
-### 2. Send Batch Transactions with Capabilities
-
+<Step title="Send Batch Transactions with Capabilities">
 Use Wagmi's [`sendCalls`](https://wagmi.sh/core/api/actions/sendCalls) to send batched transactions. First, check if the wallet supports paymaster capabilities using [`getCapabilities`](https://wagmi.sh/core/api/actions/getCapabilities), then conditionally include paymaster settings in your transaction:
 
 ```typescript components/BatchTransaction.tsx highlight={9,10,11,12,34}
@@ -126,6 +126,8 @@ async function sendBatchTransaction() {
 <Tip>
 You can get your paymaster API key from [Coinbase Developer Platform](https://docs.cdp.coinbase.com/paymaster/introduction/welcome) to sponsor gas fees for your users.
 </Tip>
+</Step>
+</Steps>
 
 <CardGroup cols={2}>
   <Card title="Batch Transactions Guide" icon="layer-group" href="/base-account/improve-ux/batch-transactions">
