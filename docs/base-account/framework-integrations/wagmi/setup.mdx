@@ -3,6 +3,8 @@ title: "Setup"
 description: "Configure Wagmi with Base Account connector for your React application"
 ---
 
+import { GithubRepoCard } from "/snippets/GithubRepoCard.mdx";
+
 Learn how to set up Wagmi with Base Account to enable Base Account SDK functionality with familiar React hooks.
 
 ## Overview
@@ -309,7 +311,7 @@ export function Providers(props: {
 
 </CodeGroup>
 
-## Create a simple page (Sign in with Base)
+## Create a Simple Page (Sign in with Base)
 
 Create a simple landing page that uses Sign In With Base to authenticate the user
 
@@ -473,7 +475,29 @@ export default App;
 <Warning>
 This is a simple example to get you started.
 You will need to add your own backend logic to verify the signature and authenticate the user.
+
+You can find a complete example in the [Base Account Wagmi Template](https://github.com/base/demos/tree/master/base-account/base-account-wagmi-template).
 </Warning>
+
+
+## Run the Wagmi App
+
+Run the application with your package manager of choice:
+
+<CodeGroup>
+```bash npm
+npm run dev
+```
+```bash pnpm
+pnpm run dev
+```
+```bash yarn
+yarn run dev
+```
+```bash bun
+bun run dev
+```
+</CodeGroup>
 
 <div style={{ display: 'flex', justifyContent: 'center'}}>
   <img src="/images/base-account/wagmi-siwb.png" alt="Wagmi Setup" style={{ width: '500px', height: 'auto' }} />
