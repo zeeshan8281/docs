@@ -1,9 +1,31 @@
 ---
 title: "Accept Payments"
-description: "Accept one-tap USDC payments with the Base Pay helper function."
+description: "Enable one-tap USDC payments with Base Pay."
 ---
 
-Accept one-tap USDC payments with the Base Pay helper function. No additional setup required - just import and call:
+Accept one-tap USDC payments with the Base Pay helper function. No additional setup required:
+
+<Steps>
+<Step title="Install the Base Account SDK">
+
+<CodeGroup>
+```bash npm
+npm install @base-org/account
+```
+```bash pnpm
+pnpm add @base-org/account
+```
+```bash yarn
+yarn add @base-org/account
+```
+```bash bun
+bun add @base-org/account
+```
+</CodeGroup>
+
+</Step>
+
+<Step title="Import and call the `pay` function">
 
 ```typescript title="PaymentComponent.tsx"
 import { pay, getPaymentStatus } from '@base-org/account';
@@ -44,8 +66,9 @@ However, this is ***not supported*** in Mini Apps yet.
 <Tip>
 If you intend on using Base Pay, make sure to follow the [Brand Guidelines](/base-account/reference/ui-elements/brand-guidelines) or use the [`BasePayButton`](/base-account/reference/ui-elements/base-pay-button) component whenever possible to ensure consistency across all applications.
 </Tip>
+</Step>
 
-## Add Base Pay Button
+<Step title="Add the Base Pay Button">
 
 Use the pre-built component for a native look-and-feel:
 
@@ -71,6 +94,10 @@ export function Checkout() {
   );
 }
 ```
+
+</Step>
+
+</Steps>
 
 <CardGroup cols={2}>
   <Card title="Base Pay Reference" icon="file-lines" href="/base-account/reference/base-pay/pay">
