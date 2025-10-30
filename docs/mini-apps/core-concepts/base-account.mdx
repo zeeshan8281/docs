@@ -26,157 +26,118 @@ you can follow the steps detailed in the [Common Issues & Debugging](/mini-apps/
 
 ---
 
-## Key Features & Examples
+## Implementation
 
-### 1. Batch Transactions
+### 1. Set Up Wagmi Provider
 
-Combine multiple operations into a single user confirmation using `wallet_sendCalls`:
+Configure Wagmi with the Farcaster Mini App connector and Base Account connector to enable Base Account features in your Mini App:
 
-```typescript components/batchTransfer.tsx highlight={4,8}
-import { numberToHex, parseEther } from 'viem';
+```typescript wagmi.ts expandable
+"use client";
 
-async function batchTransfer() {
-  const provider = window.ethereum; // Get the Ethereum provider
-  const accounts = await provider.request({ method: 'eth_requestAccounts' });
-  
-  const result = await provider.request({
-    method: 'wallet_sendCalls', // Send the batch transaction
-    params: [{
-      version: '1.0',
-      from: accounts[0],
-      chainId: numberToHex(8453), // Base mainnet
-      calls: [
-        {
-          to: '0xRecipient1',
-          value: numberToHex(parseEther('0.01')),
-          data: '0x'
-        },
-        {
-          to: '0xRecipient2',
-          value: numberToHex(parseEther('0.01')),
-          data: '0x'
-        }
-      ]
-    }]
-  });
-  
-  console.log('Batch transaction sent:', result);
-}
-```
+import { createConfig, http, WagmiProvider } from "wagmi";
+import { base, optimism } from "wagmi/chains";
+import { baseAccount } from "wagmi/connectors";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { farcasterMiniApp } from "@farcaster/miniapp-wagmi-connector";
+import { METADATA } from "../lib/utils";
 
-<Card title="Batch Transactions Full Guide" icon="layer-group" href="/base-account/improve-ux/batch-transactions">
-  Learn about atomic batching and how to use it with Base Account
-</Card>
-
-### 2. Sponsored Gas Transactions
-
-Let your Mini App pay gas fees for users with paymaster capabilities:
-
-```typescript components/sponsoredMint.tsx highlight={4,34}
-import { numberToHex, encodeFunctionData } from 'viem';
-
-async function sponsoredMint() {
-  const provider = window.ethereum; // Get the Ethereum provider
-  const accounts = await provider.request({ method: 'eth_requestAccounts' });
-  
-  const nftABI = [
-    {
-      name: 'mint',
-      type: 'function',
-      stateMutability: 'nonpayable',
-      inputs: [{ name: 'to', type: 'address' }],
-      outputs: []
-    }
-  ];
-  
-  const result = await provider.request({
-    method: 'wallet_sendCalls',
-    params: [{
-      version: '1.0',
-      from: accounts[0],
-      chainId: numberToHex(8453),
-      calls: [{
-        to: '0xNFTContract',
-        value: '0x0',
-        data: encodeFunctionData({
-          abi: nftABI,
-          functionName: 'mint',
-          args: [accounts[0]]
-        })
-      }],
-      capabilities: {
-        paymasterService: {
-          url: 'https://api.developer.coinbase.com/rpc/v1/base/YOUR_KEY' // Your paymaster service URL
-        }
-      }
-    }]
-  });
-  
-  console.log('Sponsored transaction sent:', result);
-}
-```
-<Tip>
-You can get your paymaster API key from [Coinbase Developer Platform](https://docs.cdp.coinbase.com/paymaster/introduction/welcome).
-</Tip>
-
-<Card title="Sponsor Gas Full Guide" icon="gas-pump" href="/base-account/improve-ux/sponsor-gas/paymasters">
-  Set up paymasters and manage gas sponsorship
-</Card>
-
-### 3. Check Wallet Capabilities
-
-EIP-5792 introduced capabilities detection to allow wallets to declare what capabilities they support.
-In order to detect what capabilities the mini apps supports, you can use the `wallet_getCapabilities` method.
-
-```typescript components/checkCapabilities.tsx highlight={2,6}
-async function checkCapabilities() {
-  const provider = window.ethereum; // Get the Ethereum provider
-  const accounts = await provider.request({ method: 'eth_requestAccounts' });
-  
-  const capabilities = await provider.request({
-    method: 'wallet_getCapabilities', // Check the wallet capabilities
-    params: [accounts[0]]
-  });
-  
-  const baseCapabilities = capabilities['0x2105']; // Base mainnet chain ID
-  
-  console.log('Atomic batch:', baseCapabilities?.atomicBatch?.supported);
-  console.log('Paymaster:', baseCapabilities?.paymasterService?.supported);
-  console.log('Auxiliary funds:', baseCapabilities?.auxiliaryFunds?.supported);
-}
-```
-
-<Card title="Capabilities Reference" icon="list-check" href="/base-account/reference/core/capabilities/overview">
-  Full list of Base Account capabilities
-</Card>
-
----
-
-## Using Base Account Features
-
-### Get the Ethereum Provider
-
-In Mini Apps, access Base Account through the standard Ethereum provider:
-
-```typescript app.tsx highlight={4-4}
-// [...]
-
-// Get the provider
-const provider = window.ethereum;
-
-if (!provider) {
-  console.error('No Ethereum provider found');
-  return;
-}
-
-// Request account access
-const accounts = await provider.request({ 
-  method: 'eth_requestAccounts' 
+export const config = createConfig({
+  chains: [base, optimism],
+  transports: {
+    [base.id]: http(),
+    [optimism.id]: http(),
+  },
+  connectors: [
+    farcasterMiniApp(), 
+    baseAccount({
+      appName: METADATA.name,
+      appLogoUrl: METADATA.iconImageUrl,
+    })
+  ],
 });
 
-console.log('Connected account:', accounts[0]);
+const queryClient = new QueryClient();
+
+export default function Provider({ children }: { children: React.ReactNode }) {
+  return (
+    <WagmiProvider config={config}>
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    </WagmiProvider>
+  );
+}
 ```
 
+<Note>
+The `farcasterMiniApp()` connector automatically connects to the user's Base Account when the Mini App launches within the Base App.
+</Note>
+
+### 2. Send Batch Transactions with Capabilities
+
+Use Wagmi's [`sendCalls`](https://wagmi.sh/core/api/actions/sendCalls) to send batched transactions. First, check if the wallet supports paymaster capabilities using [`getCapabilities`](https://wagmi.sh/core/api/actions/getCapabilities), then conditionally include paymaster settings in your transaction:
+
+```typescript components/BatchTransaction.tsx highlight={9,10,11,12,34}
+import { parseEther } from 'viem';
+import { sendCalls, getCapabilities } from '@wagmi/core';
+import { config } from '../providers/Provider';
+
+async function sendBatchTransaction() {
+  // Get the connected account
+  const [account] = await config.getClient().getAddresses();
+  
+  // Check if paymaster capability is supported
+  const capabilities = await getCapabilities(config, {
+    account,
+  });
+  
+  const baseCapabilities = capabilities[8453]; // Base mainnet chain ID
+  const supportsPaymaster = baseCapabilities?.paymasterService?.supported;
+  
+  // Prepare transaction calls
+  const calls = [
+    {
+      to: '0x70997970c51812dc3a010c7d01b50e0d17dc79c8',
+      value: parseEther('0.01'),
+    },
+    {
+      to: '0xa5cc3c03994DB5b0d9A5eEdD10CabaB0813678AC',
+      value: parseEther('0.01'),
+    },
+  ];
+  
+  // Send calls with optional paymaster capability
+  const id = await sendCalls(config, {
+    account,
+    calls,
+    chainId: 8453,
+    capabilities: supportsPaymaster
+      ? {
+          paymasterService: {
+            url: 'https://api.developer.coinbase.com/rpc/v1/base/YOUR_KEY',
+          },
+        }
+      : undefined,
+  });
+  
+  console.log('Transaction batch ID:', id);
+}
+```
+
+<Tip>
+You can get your paymaster API key from [Coinbase Developer Platform](https://docs.cdp.coinbase.com/paymaster/introduction/welcome) to sponsor gas fees for your users.
+</Tip>
+
+<CardGroup cols={2}>
+  <Card title="Batch Transactions Guide" icon="layer-group" href="/base-account/improve-ux/batch-transactions">
+    Learn about atomic batching and how to use it with Base Account
+  </Card>
+  
+  <Card title="Sponsor Gas Guide" icon="gas-pump" href="/base-account/improve-ux/sponsor-gas/paymasters">
+    Set up paymasters and manage gas sponsorship
+  </Card>
+</CardGroup>
+
+### 3. Additional Methods and Capabilities
 Getting the provider allows you to use the Base Account SDK to interact with the user's Base Account.
 Follow the [Base Account guides](/base-account/overview/what-is-base-account) to use these features.
 
@@ -184,7 +145,9 @@ Once you have the provider, you can call Base Account RPC methods. See the [full
 
 The next section lists the methods and capabilities that are not supported in Mini Apps yet.
 
-### Unsupported Methods and Capabilities
+---
+
+## Unsupported Methods and Capabilities
 
 The following methods and capabilities are not yet supported in Mini Apps but will be added soon:
 
